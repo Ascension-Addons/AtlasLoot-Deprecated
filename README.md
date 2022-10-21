@@ -1,3 +1,3 @@
-# Addon Name
+# Atlas Loot
 
-This is the repository for <Addon Name>. Modified for Ascension.gg. 
+This is the repository for Atlas Loot. Modified for Ascension.gg. 
