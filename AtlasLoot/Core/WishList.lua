@@ -77,7 +77,12 @@ function AtlasLoot_WishListAddDropClick(typ, arg2, arg3, arg4)
 				DEFAULT_CHAT_FRAME:AddMessage(BLUE..AL["AtlasLoot"]..": "..AtlasLoot_FixText(itemName)..RED..AL[" already in the WishList!"]..WHITE.." ("..AtlasLootWishList["Own"][arg2].Name..")");
 				return;
 			end
-			table.insert(AtlasLootWishList["Own"][arg2], { #AtlasLootWishList["Own"][arg2] + 1, itemID, itemTexture, itemName, AtlasLoot_Data[AtlasLootItemsFrame.refresh[1]].Name, "", "", sourcePage});
+			if(AtlasLootItemsFrame.refresh[1] == "SearchResult") then
+				local dataID, _, dataPage = strsplit("|", sourcePage);
+				table.insert(AtlasLootWishList["Own"][arg2], { #AtlasLootWishList["Own"][arg2] + 1, itemID, itemTexture, itemName, AtlasLoot_Data[dataID][tonumber(dataPage)].Name, "", "", sourcePage});
+			else
+				table.insert(AtlasLootWishList["Own"][arg2], { #AtlasLootWishList["Own"][arg2] + 1, itemID, itemTexture, itemName, AtlasLoot_Data[AtlasLootItemsFrame.refresh[1]].Name, "", "", sourcePage});
+			end
 			if AtlasLootWishList["Options"][playerName]["AutoSortWishlist"] then
 				AtlasLoot:SortWishList(nil,"Own", arg2);
 			end
@@ -98,12 +103,12 @@ function AtlasLoot_WishListAddDropClick(typ, arg2, arg3, arg4)
 	end
 end
 
-local function CloneTable(t)				-- return a copy of the table t
+function AtlasLoot:CloneTable(t)				-- return a copy of the table t
 	local new = {};					-- create a new table
 	local i, v = next(t, nil);		-- i is an index of t, v = t[i]
 	while i do
 		if type(v)=="table" then 
-			v=CloneTable(v);
+			v=AtlasLoot:CloneTable(v);
 		end
 		new[i] = v;
 		i, v = next(t, i);			-- get next index
@@ -966,12 +971,27 @@ function AtlasLoot_GetWishList(wlstrg,sendername)
 	local success, wltab = ALModule:Deserialize(wlstrg);
 	if success then
 		for i,v in ipairs(wltab) do
-			v[8] = v[8].."|"..v[9].."|"..v[10];
-			table.remove(v,9)
-			table.remove(v,10)
+			if v[8] then
+				v[8] = v[8].."|"..v[9].."|"..v[10];
+				table.remove(v,9)
+				table.remove(v,10)
+			end
 		end
 		table.insert(AtlasLootWishList["Shared"],wltab)
 	end
+end
+
+local EscapePatterns={
+    "|[cC]%x%x%x%x%x%x";
+    "|T[^|]+|t";
+    "|H[^|]+|h%[(.-)%]|h";
+};
+ 
+local function StripEscapes(str)
+    for _,pattern in ipairs(EscapePatterns) do
+        str=str:gsub(pattern,pattern:find("%(.-[^%%]%)") and "%1" or "");
+    end
+    return str:gsub("^%s*(.-)%s*$","%1"):gsub("%s+"," ");-- Strip extra spaces
 end
 
 --[[
@@ -986,13 +1006,15 @@ function ALModule:OnCommReceived(prefix, message, distribution, sender)
 	elseif message == "FinishSend" then
 		SpamFilter[string.lower(sender)] = GetTime()
 	elseif message == "AcceptWishlist" then
-		local wsltable = CloneTable(_G[curtable[2]][curtable[1]][curtable[3]]);
+		local wsltable = AtlasLoot:CloneTable(_G[curtable[2]][curtable[1]][curtable[3]]);
 			for i,v in ipairs(wsltable) do
-				v[4] = ""
-				local dataID, dataSource, dataPage = strsplit("|", v[8])
-				v[8] = dataID;
-				v[9] = dataSource;
-				v[10] = dataPage;
+				v[4] = gsub(StripEscapes(v[4]),"FF","");
+				if v[8] then
+					local dataID, dataSource, dataPage = strsplit("|", v[8])
+					v[8] = dataID;
+					v[9] = dataSource;
+					v[10] = dataPage;
+				end
 			end
 		local sendData = ALModule:Serialize(wsltable);
 		ALModule:SendCommMessage("AtlasLootWishlist", sendData, "WHISPER", sender);

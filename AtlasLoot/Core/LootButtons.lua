@@ -69,7 +69,9 @@ function AtlasLootItem_OnEnter(self)
                     if ( AtlasLoot.db.profile.ItemIDs ) then
                         AtlasLootTooltip:AddLine(BLUE..AL["ItemID:"].." "..self.itemID, nil, nil, nil, 1);
                     end
-                    if( self.droprate ~= nil) then
+                    if( self.droprate ~= nil) and ( self.droprate:match("=EI=") ) then
+                        AtlasLootTooltip:AddLine(AL["Extra Info: "]..string.sub(self.droprate, 5), 1, 1, 0);
+                    elseif( self.droprate ~= nil) then
                         AtlasLootTooltip:AddLine(AL["Drop Rate: "]..self.droprate, 1, 1, 0);
                     end
                     if( DKP ~= nil and DKP ~= "" ) then
@@ -96,8 +98,10 @@ function AtlasLootItem_OnEnter(self)
                     if ( AtlasLoot.db.profile.ItemIDs ) then
                         AtlasLootTooltip:AddLine(BLUE..AL["ItemID:"].." "..self.itemID, nil, nil, nil, 1);
                     end
-                    if( self.droprate ~= nil) then
-                        AtlasLootTooltip:AddLine(AL["Drop Rate: "]..self.droprate, 1, 1, 0, 1);
+                    if( self.droprate ~= nil) and (self.droprate:match("=EI=")) then
+                        AtlasLootTooltip:AddLine(AL["Extra Info: "]..string.sub(self.droprate, 5), 1, 1, 0);
+                    elseif( self.droprate ~= nil) then
+                        AtlasLootTooltip:AddLine(AL["Drop Rate: "]..self.droprate, 1, 1, 0);
                     end
                     if( DKP ~= nil and DKP ~= "" ) then
                         AtlasLootTooltip:AddLine(RED..DKP.." "..AL["DKP"], 1, 1, 0);
@@ -118,8 +122,10 @@ function AtlasLootItem_OnEnter(self)
                 if ( AtlasLoot.db.profile.ItemIDs ) then
                     GameTooltip:AddLine(BLUE..AL["ItemID:"].." "..self.itemID, nil, nil, nil, 1);
                 end
-                if( self.droprate ~= nil) then
-                    GameTooltip:AddLine(AL["Drop Rate: "]..self.droprate, 1, 1, 0);
+                if( self.droprate ~= nil) and ( self.droprate:match("=EI=") ) then
+                    AtlasLootTooltip:AddLine(AL["Extra Info: "]..string.sub(self.droprate, 5), 1, 1, 0);
+                elseif( self.droprate ~= nil) then
+                    AtlasLootTooltip:AddLine(AL["Drop Rate: "]..self.droprate, 1, 1, 0);
                 end
                 if( DKP ~= nil and DKP ~= "" ) then
                     GameTooltip:AddLine(RED..DKP.." "..AL["DKP"], 1, 1, 0);
@@ -141,7 +147,9 @@ function AtlasLootItem_OnEnter(self)
                         if ( AtlasLoot.db.profile.ItemIDs ) then
                             AtlasLootTooltip:AddLine(BLUE..AL["ItemID:"].." "..self.itemID, nil, nil, nil, 1);
                         end
-                        if( self.droprate ~= nil) then
+                        if( self.droprate ~= nil) and ( self.droprate:match("=EI=") ) then
+                            AtlasLootTooltip:AddLine(AL["Extra Info: "]..string.sub(self.droprate, 5), 1, 1, 0);
+                        elseif( self.droprate ~= nil) then
                             AtlasLootTooltip:AddLine(AL["Drop Rate: "]..self.droprate, 1, 1, 0);
                         end
                         if( DKP ~= nil and DKP ~= "" ) then
@@ -154,15 +162,6 @@ function AtlasLootItem_OnEnter(self)
                         if((AtlasLoot.db.profile.EquipCompare and ((not EquipCompare_RegisterTooltip) or (not EquipCompare_Enabled)))) or IsShiftKeyDown() then
                             AtlasLootItem_ShowCompareItem(self); --- CALL MISSING METHOD TO SHOW 2 TOOLTIPS (Item Compare)
                         end
-                    else
-                        AtlasLootTooltip:SetOwner(self, "ANCHOR_RIGHT", -(self:GetWidth() / 2), 24);
-                        AtlasLootTooltip:ClearLines();
-                        AtlasLootTooltip:AddLine(RED..AL["Item Unavailable"], nil, nil, nil, 1);
-                        AtlasLootTooltip:AddLine(BLUE..AL["ItemID:"].." "..self.itemID, nil, nil, nil, 1);
-                        AtlasLootTooltip:AddLine(AL["self item is unsafe.  To view self item without the risk of disconnection, you need to have first seen it in the game world. This is a restriction enforced by Blizzard since Patch 1.10."], nil, nil, nil, 1);
-                        AtlasLootTooltip:AddLine(" ");
-                        AtlasLootTooltip:AddLine(AL["You can right-click to attempt to query the server.  You may be disconnected."], nil, nil, nil, 1);
-                        AtlasLootTooltip:Show();
                     end
                 end
             end
@@ -224,7 +223,7 @@ function AtlasLootItem_OnClick(self ,arg1)
         if arg1=="RightButton" and ATLASLOOT_ITEM_UNLOCK then
             AtlasLoot:MoveWishlistItem("Down",self.number);
         elseif IsAltKeyDown() and arg1=="LeftButton" and ATLASLOOT_ITEM_UNLOCK then
-            StaticPopup_Show ("ATLASLOOT_ADD_CUSTOMHEADER");
+            StaticPopup_Show("ATLASLOOT_ADD_CUSTOMHEADER");
             StaticPopupDialogs.ATLASLOOT_ADD_CUSTOMHEADER.num = self.number;
         elseif (arg1=="LeftButton") and ATLASLOOT_ITEM_UNLOCK then
             AtlasLoot:MoveWishlistItem("Up",self.number);
@@ -252,10 +251,10 @@ function AtlasLootItem_OnClick(self ,arg1)
             else
                 if(AtlasLootItemsFrame.refresh[1] == "SearchResult") then
                     local datID, _, datPage = strsplit("|", self.sourcePage);
-                    AtlasLoot_ShowWishListDropDown(self.itemID, self.itemTexture, _G["AtlasLootItem_"..self:GetID().."_Name"]:GetText(), 
-                                                        AtlasLoot_Data[datID][tonumber(datPage)].Name, self.sourcePage, self);
+                    AtlasLoot_ShowWishListDropDown(self.itemID, self.itemTexture, _G["AtlasLootItem_"..self:GetID().."_Name"]:GetText(), AtlasLoot_Data[datID][tonumber(datPage)].Name, 
+                                                    datID .. "|" .. "AtlasLoot_Data" .. "|" .. tostring(datPage), self);
                 else
-                    AtlasLoot_ShowWishListDropDown(self.itemID, self.itemTexture, _G["AtlasLootItem_"..self:GetID().."_Name"]:GetText(), 
+                    AtlasLoot_ShowWishListDropDown(self.itemID, self.itemTexture, _G["AtlasLootItem_"..self:GetID().."_Name"]:GetText(),
                                                         AtlasLoot_BossName:GetText(), self.dataID .. "|" .. "AtlasLoot_Data" .. "|" .. tostring(self.tablenum), self);
                 end
             end
@@ -264,6 +263,12 @@ function AtlasLootItem_OnClick(self ,arg1)
             if(dataID and dataSource) then
                 AtlasLoot:ShowItemsFrame(dataID, "AtlasLoot_Data", tonumber(dataPage));
             end
+        elseif( self.sourcePage and self.sourcePage:match("=LT=") ) then
+            local dataID, dataSource, dataPage = strsplit("|", string.sub(self.sourcePage, 5));
+                if(dataID and dataSource) then
+                    ATLASLOOT_BACKENABLED = true;
+                    AtlasLoot:ShowItemsFrame(dataID, "AtlasLoot_Data", tonumber(dataPage));
+                end
         elseif (arg1=="LeftButton") and self.sourcePage then
            --Create token table if there isnt one
             if AtlasLoot_TokenData[self.sourcePage] == nil then
@@ -295,6 +300,12 @@ function AtlasLootItem_OnClick(self ,arg1)
         elseif((AtlasLootItemsFrame.refresh[1] == "SearchResult" or AtlasLootItemsFrame.refresh[1] == "WishList") and self.sourcePage) then
             local dataID, dataSource, dataPage = strsplit("|", self.sourcePage);
             if(dataID and dataSource) then
+                AtlasLoot:ShowItemsFrame(dataID, "AtlasLoot_Data", tonumber(dataPage));
+            end
+        elseif( self.sourcePage and self.sourcePage:match("=LT=") ) then
+        local dataID, dataSource, dataPage = strsplit("|", string.sub(self.sourcePage, 5));
+            if(dataID and dataSource) then
+                ATLASLOOT_BACKENABLED = true;
                 AtlasLoot:ShowItemsFrame(dataID, "AtlasLoot_Data", tonumber(dataPage));
             end
         end
