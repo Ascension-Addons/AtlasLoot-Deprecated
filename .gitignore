@@ -5,3 +5,5 @@
 .lua/*
 .vscode
 .idea
+
+.vscode/settings.json
