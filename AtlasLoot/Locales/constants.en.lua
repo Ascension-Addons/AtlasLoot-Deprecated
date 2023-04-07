@@ -1,4 +1,4 @@
-﻿--[[
+--[[
 constants.en.lua
 This file defines an AceLocale table for all the various text strings needed
 by AtlasLoot.  In this implementation, if a translation is missing, it will fall
@@ -138,6 +138,7 @@ if AL then
 	AL["Tier 1 Set Token (Click)"] = true;
 	AL["Tier 2 Set Token (Click)"] = true;
 	AL["Tier 2.5 Set Token (Click)"] = true;
+	AL["Set Token (Click)"] = true;
 	AL["Tier 3 Set Token (Click)"] = true;
 	AL["Tier 4 Set Token (Click)"] = true;
 	AL["Tier 5 Set Token (Click)"] = true;
@@ -924,6 +925,14 @@ if AL then
 	AL["Gift of the Gathering Storm"] = true;
 	AL["Implements of Unspoken Names"] = true;
 	AL["Battlegear of Unyielding Strength"] = true;
+	AL["Keepsakes of Endless Machinations"] = true;
+	AL["Regalia of Roaring Earth"] = true;
+	AL["Relics of Ferocious Vigor"] = true;
+	AL["Laurels of the Faithful Zealot"] = true;
+	AL["Instruments of Masterful Technique"] = true;
+	AL["Decorations of Martial Prowess"] = true;
+	AL["Trophies of Unrivaled Rage"] = true;
+	AL["Remnants of Expansive Research"] = true;
 
 	-- AQ40 Sets
 	AL["Genesis Raiment"] = true;
