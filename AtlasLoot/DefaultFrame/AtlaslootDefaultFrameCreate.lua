@@ -575,6 +575,7 @@ local rows = setmetatable({}, { __index = function(t, i)
             end
             AtlasLoot:ScrollFrameUpdate();
         end
+
     end)
 	if i == 1 then
 		row:SetPoint("TOPLEFT", scrollFrame, 8, -8)
