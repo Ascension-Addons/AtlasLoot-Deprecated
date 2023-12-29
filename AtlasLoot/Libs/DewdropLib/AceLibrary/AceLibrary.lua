@@ -392,8 +392,10 @@ local function TryToLoadStandalone(major)
 	end
 	
 	local field = "X-AceLibrary-" .. major 
+	local metadata
 	for i = 1, GetNumAddOns() do
-		if GetAddOnMetadata(i, field) ~= "" then
+		metadata = GetAddOnMetadata(i, field)
+		if metadata and metadata ~= "" then
 			name, _, _, enabled, loadable = GetAddOnInfo(i)
 			
 			loadable = (enabled and loadable) or TryToEnable(name)
