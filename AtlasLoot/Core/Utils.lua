@@ -9,6 +9,7 @@ local BLUE = "|cff0070dd"
 local ORANGE = "|cffFF8400"
 local CYAN =  "|cff00ffff"
 local SPRINGGREEN = "|cFF00FF7F"
+local YELLOW = "|cffFFd200"
 
 -- Used to create a dewdrop menu from a table
 function AtlasLoot:OpenDewdropMenu(frame, menuList, skipRegister)
@@ -104,6 +105,16 @@ function AtlasLoot:CloneTable(table)
 		new[i] = v
 	end
 	return new
+end
+
+--drop down map menu
+function AtlasLoot:OpenDB(frame, type, text)
+    local menuList = { [1] = {
+        {text = ORANGE..AL["Open AscensionDB To NPC"], func = function() self:OpenDBURL(text , type) end, notCheckable = true, closeWhenClicked = true, textHeight = 12, textWidth = 12},
+		{close = true, divider = 35},
+		}
+	}
+    self:OpenDewdropMenu(frame, menuList)
 end
 
 --[[
@@ -416,7 +427,7 @@ function AtlasLoot:ItemsLoading(count)
 	if(loadingCount > 0) then
         AtlasLoot_ItemsLoadingSpinner:SetVertexColor(0,1,0)
         AtlasLoot_ItemsLoadingFrameBackground:SetVertexColor(0,1,0)
-        AtlasLoot_ItemsLoading.tooltip = loadingCount.." Items still loading"
+        AtlasLoot_ItemsLoading.tooltip = WHITE..loadingCount..YELLOW.." Items still caching\n(This can take awhile after a launcher update)"
 		AtlasLoot_ItemsLoading.Loop:Play()
 		AtlasLoot_ItemsLoading:Show()
 		if GameTooltip:GetOwner() == AtlasLoot_ItemsLoading then

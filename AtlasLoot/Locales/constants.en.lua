@@ -18,6 +18,7 @@ if AL then
 	AL["Mystic Enchanting"] = true
 	AL["Druid"] = true
 	AL["Open AscensionDB To Zone Map"] = true
+	AL["Open AscensionDB To NPC"] = true
 	AL["Open AscensionDB To Entry"] = true
 	AL["Links"] = true
 	AL["Add To Default"] = true
@@ -1544,7 +1545,9 @@ if AL then
 	AL["World Drop"] = true
 	AL["Sunwell Isle"] = true
 	AL["Gordok Commons"] = true
-	AL["Only show crafting source while colding CTRL"] = true
+	AL["Hide crafting source unless holding CTRL"] = true
+	AL["Show drop location on search results"] = true
+
 
 	-- Shortcuts for Bossname files
 	AL["LBRS"] = true
