@@ -36,6 +36,7 @@ function AtlasLoot:OptionsInit()
     AtlasLootOptionsFrameLootBrowserScale:SetValue(self.db.profile.LootBrowserScale)
     AtlasLootOptionsMinimapIcon:SetChecked(self.db.profile.minimap.hide)
     AtlasLootOptionsFrameCraftingInfo:SetChecked(self.db.profile.recipeExtraInfoSwitch)
+    AtlasLootOptionsFrameDropLocation:SetChecked(self.db.profile.showdropLocationOnSearch)
 end
 
 --[[
@@ -170,6 +171,7 @@ end
 
 function AtlasLoot:OptionsOnShow()
     AtlasLoot_SelectLootBrowserStyle_Label:SetText(AL["Change AtlasLoot Skin:"])
+    if InterfaceOptionsFrame:GetWidth() < 850 then InterfaceOptionsFrame:SetWidth(850) end
     UIDropDownMenu_Initialize(AtlasLoot_SelectLootBrowserStyle, selectLootBrowserStyle_Initialize)
 	UIDropDownMenu_SetSelectedID(AtlasLoot_SelectLootBrowserStyle, self.db.profile.LootBrowserStyle)
 	UIDropDownMenu_SetWidth(AtlasLoot_SelectLootBrowserStyle, 150)
@@ -223,8 +225,13 @@ local autoInstance = CreateFrame("CheckButton", "AtlasLootOptionsFrameAutoInstan
 
 local craftingInfo = CreateFrame("CheckButton", "AtlasLootOptionsFrameCraftingInfo", AtlasLootOptionsFrame, "OptionsCheckButtonTemplate")
         craftingInfo:SetPoint("TOPLEFT",5,-100)
-        AtlasLootOptionsFrameCraftingInfoText:SetText(AL["Only show crafting source while colding CTRL"])
+        AtlasLootOptionsFrameCraftingInfoText:SetText(AL["Hide crafting source unless holding CTRL"])
         craftingInfo:SetScript("OnClick", function() self.db.profile.recipeExtraInfoSwitch = not self.db.profile.recipeExtraInfoSwitch end)
+
+local craftingInfo = CreateFrame("CheckButton", "AtlasLootOptionsFrameDropLocation", AtlasLootOptionsFrame, "OptionsCheckButtonTemplate")
+        craftingInfo:SetPoint("TOPLEFT",5,-130)
+        AtlasLootOptionsFrameDropLocationText:SetText(AL["Show drop location on search results"])
+        craftingInfo:SetScript("OnClick", function() self.db.profile.showdropLocationOnSearch = not self.db.profile.showdropLocationOnSearch end)
 
 local itemid = CreateFrame("CheckButton", "AtlasLootOptionsFrameItemID", AtlasLootOptionsFrame, "OptionsCheckButtonTemplate")
         itemid:SetPoint("TOP",5,-70)
