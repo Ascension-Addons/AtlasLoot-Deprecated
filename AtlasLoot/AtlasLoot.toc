@@ -1,8 +1,8 @@
-﻿## Interface: 30300
+## Interface: 30300
 ## Title: AtlasLoot Ascension Edition
 ## Notes: Shows the possible loot from the bosses
 ## Author: v7 Rebuid Done by: Anch, Rvng
-## Version: v7.3.2
+## Version: v7.3.5
 ## X-eMail: 
 ## X-Credits: Skray, Szyler and others.
 ## X-Category: Map
