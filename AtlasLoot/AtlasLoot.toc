@@ -3,6 +3,7 @@
 ## Notes: Shows the possible loot from the bosses
 ## Author: v7 Rebuid Done by: Anch, Rvng
 ## Version: v7.3.7
+
 ## X-eMail: 
 ## X-Credits: Skray, Szyler and others.
 ## X-Category: Map
