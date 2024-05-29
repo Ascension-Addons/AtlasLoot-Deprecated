@@ -11,6 +11,9 @@ local CYAN =  "|cff00ffff"
 local SPRINGGREEN = "|cFF00FF7F"
 local YELLOW = "|cffFFd200"
 
+local playerName = UnitName("player")
+local realmName = GetRealmName()
+
 -- Used to create a dewdrop menu from a table
 function AtlasLoot:OpenDewdropMenu(frame, menuList, skipRegister)
 	if self.Dewdrop:IsOpen(frame) then self.Dewdrop:Close() return end
@@ -125,8 +128,38 @@ On the form of {ID, {normal, heroic, mythic, mythic1, mythic2, ... ,mythicN}}
 function AtlasLoot:FindId(id, difficulty, type, sourceType)
 	if not ItemIDsDatabase[id] then return nil, false end
 	if difficulty == 100 then
+		local newIDs = {
+			(id < 1000000 and (id) + 6300000),
+			(id < 1000000 and (id) + 7800000),
+			(id > 1000000 and (id - 1500000) + 6300000),
+			(id > 1000000 and (id - 1500000) + 7800000),
+	}
+		for _, newID in ipairs(newIDs) do
+		local ogName = GetItemInfoInstant(id)
+			local newName = GetItemInfoInstant(newID)
+			if newName and ogName and string.find(newName.name, ogName.name) then
+				return  newID, true
+			end
+		end
 		return ItemIDsDatabase[id]["HeroicBloodforged"], true
 	end
+
+	if difficulty == 1 then
+		local newIDs = {
+			(id < 1000000 and (id) + 6000000),
+			(id < 1000000 and (id) + 7500000),
+			(id > 1000000 and (id - 1500000) + 6000000),
+			(id > 1000000 and (id - 1500000) + 7500000),
+	}
+		for _, newID in ipairs(newIDs) do
+		local ogName = GetItemInfoInstant(id)
+			local newName = GetItemInfoInstant(newID)
+			if newName and ogName and string.find(newName.name, ogName.name) then
+				return  newID, true
+			end
+		end
+	end
+
 	if (difficulty == 4 and (type == "BCRaid" or type == "ClassicRaid") and sourceType == "Search") or
 	(difficulty == 5 and (type == "BCRaid" or type == "ClassicRaid") and sourceType ~= "Search") then
 		return ItemIDsDatabase[id]["MythicRaid"], true
@@ -135,7 +168,7 @@ function AtlasLoot:FindId(id, difficulty, type, sourceType)
 		difficulty = 4
 	end
 	return ItemIDsDatabase[id][difficulty], true
-	end
+end
 
 -- Create enchant tooltip
 function AtlasLoot:GetEnchantLink(enchantID)
@@ -176,7 +209,7 @@ function AtlasLoot:GetRecipeData(recipeID, idType)
 		for _,cat in pairs(prof) do
 		   for _,recipe in pairs(cat) do
 			  if (idType == "spell" and recipeID == recipe.SpellEntry) or (idType == "item" and recipeID == recipe.RecipeItemEntry) then
-				local info = {{recipe.CreatedItemEntry}, "blank", "blank", "blank", "blank", "blank",spellID = recipe.SpellEntry}
+				local info = {{recipe.CreatedItemEntry}, "blank", "blank", "blank", "blank", "blank",spellID = recipe.SpellEntry, skillIndex = recipe.SkillIndex}
 				if ItemIDsDatabase[recipe.CreatedItemEntry] and ItemIDsDatabase[recipe.CreatedItemEntry][1] then
 					info[2] = {ItemIDsDatabase[recipe.CreatedItemEntry][1]}
 				end
@@ -210,6 +243,44 @@ function AtlasLoot:GetRecipeID(spellID)
 			end
 		end
 	 end
+end
+
+function AtlasLoot:IsRecipeKnown(ID, profile)
+	if not profile or not profile.professions then return end
+	for _, prof in pairs(profile.professions) do
+		if prof.knownRecipes[ID] then return true end
+	end
+end
+
+function AtlasLoot:GetKnownRecipes(spellID)
+    --returns a list of characters with the recipe
+	local text
+    for key, profile in pairs(self.db.profiles) do
+        if gsub(key,"-",""):match(gsub(realmName,"-","")) and not gsub(key,"-",""):match(gsub(playerName,"-","")) and self:IsRecipeKnown(spellID, profile) then
+            local charName = strsplit("-", key, 5)
+            text = text and text..", "..gsub(charName, " ", "") or gsub(charName, " ", "")
+        end
+    end
+	return text
+end
+
+function AtlasLoot:IsProfessionKnown(skillID, profile)
+	if profile and profile.professions and profile.professions[skillID] then return true end
+end
+
+function AtlasLoot:IsRecipeUnknown(ID)
+	local recipeData = self:GetRecipeData(ID, "item")
+	if not recipeData or not recipeData.skillIndex then return end
+
+	local text
+	for key, profile in pairs(self.db.profiles) do
+		if gsub(key,"-",""):match(gsub(realmName,"-","")) and
+		self:IsProfessionKnown(recipeData.skillIndex, profile) and not self:IsRecipeKnown(recipeData.spellID, profile) then
+			local charName = strsplit("-", key, 5)
+			text = text and text..", "..gsub(charName, " ", "") or gsub(charName, " ", "")
+		end
+	end
+	return text
 end
 
 -- Get rep faction for when you have 2 loot tables and want to show a different one depending on rep
@@ -395,7 +466,7 @@ end
 
 function AtlasLoot:ItemFrameRefresh()
     if refreshTimer then return end
-    self:ScheduleTimer("ItemRefreshTimer", 5)
+    self:ScheduleTimer("ItemRefreshTimer", .5)
     refreshTimer = true
 end
 -----------------------------------------------------
@@ -447,3 +518,39 @@ function AtlasLoot:BatchRequestVanity(itemList)
     end
     return nextItem()
 end
+
+local function CheckTooltipForDuplicate(tooltip, text)
+    -- Check if we already added to this tooltip.
+    for i = 1,15 do
+        local frame = _G[tooltip:GetName() .. "TextLeft" .. i]
+        local textOld
+        if frame then textOld = frame:GetText() end
+        if textOld and textOld == text then return true end
+    end
+end
+
+-- finds and sets the tooltip for the itemID that it is sent
+local function SetTooltip(itemID, tooltip)
+    local self = AtlasLoot
+	if not self.db.profile.showUnknownRecipeTooltip or UnitAffectingCombat("player") then return end
+	local text = self:IsRecipeUnknown(itemID)
+	if not text then return end
+	text = "Recipe could be learned by: "..GREEN..text
+	if not CheckTooltipForDuplicate(tooltip, text) then
+		tooltip:AddLine(text)
+	end
+end
+
+-- item tooltip handler
+local function TooltipHandlerItem(tooltip)
+    --checks for combat less likley to cause a lag spike
+    if UnitAffectingCombat("player") then return end
+    --get item link and itemID
+	local link = select(2, tooltip:GetItem())
+	if not link then return end
+	local itemID = GetItemInfoFromHyperlink(link)
+	if not itemID then return end
+    SetTooltip(itemID, tooltip)
+end
+
+GameTooltip:HookScript("OnTooltipSetItem", TooltipHandlerItem)

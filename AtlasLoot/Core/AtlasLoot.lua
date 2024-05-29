@@ -151,7 +151,8 @@ function AtlasLoot:OnEnable()
 			{Name = AL["Select a Loot Table..."]},
 		}
     end
-
+	self.db.profile.showUnknownRecipeTooltip = self.db.profile.showUnknownRecipeTooltip or true
+	if self.db.profile.knownRecipes then self.db.profile.knownRecipes  = nil end
 	if IsAddOnLoaded("TomTom") then
 		self.TomTomLoaded = true
 	end
@@ -208,6 +209,7 @@ function AtlasLoot:OnEnable()
 	self:LoadTradeskillRecipes()
 	self:PopulateProfessions()
 	self:CreateVanityCollection()
+	self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 end
 
 function AtlasLoot:Reset(data)
@@ -760,7 +762,7 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 	end
 
 	-- Setup the button for the to be displayed item/spell
-	local function setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup)
+	local function setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, item)
 		local text, extra
 		local itemName, itemQuality, itemSubType, itemEquipLoc, itemColor
 		local spellName, spellIcon
@@ -781,7 +783,7 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 				text = self:FixText(text)
 			end
 			if itemID then
-				text = select(4,GetItemQualityColor(select(3,GetItemInfo(itemID))))..text
+				text = select(4,GetItemQualityColor(item:GetQuality()))..text
 			end
 			--Adds button highlights if you know a recipe or have a char that knows one
 			if CA_IsSpellKnown(spellID) then
@@ -791,15 +793,16 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 			else
 				itemButton.hasTrade = false
 				hightlightFrame:Hide()
-				for key,v in pairs(self.db.profiles) do
-					if gsub(key,"-",""):match(gsub(realmName,"-","")) and v.knownRecipes and v.knownRecipes[spellID] then
-						hightlightFrame:SetTexture(itemHighlightBlue)
-						hightlightFrame:Show()
-					end
+				if self:GetKnownRecipes(spellID) then
+					hightlightFrame:SetTexture(itemHighlightBlue)
+					hightlightFrame:Show()
 				end
+
 			end
 		elseif itemID then
 			itemName, _, itemQuality, _, _, _, itemSubType, _, itemEquipLoc, _ = GetItemInfo(itemID)
+			itemName = itemName or item:GetName()
+			itemSubType = itemSubType or AtlasLoot_ExtraData["ArmorConversion"][item:GetSubClassID()]
 				if not itemName then
 					itemID = orgItemID
 					itemName, _, itemQuality, _, _, _, itemSubType, _, itemEquipLoc, _ = GetItemInfo(itemID)
@@ -810,8 +813,8 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 				text = dataSource[dataID][tablenum][i].name
 				text = self:FixText(text)
 			elseif itemName then
-				_, _, _, itemColor = GetItemQualityColor(itemQuality)
-				text = itemColor..itemName
+				itemQuality = itemQuality or item:GetQuality()
+				text = itemQuality and select(4,GetItemQualityColor(itemQuality))..itemName or itemName
 			else
 				text = ""
 			end
@@ -895,7 +898,8 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 		elseif spellIcon then
 			iconFrame:SetTexture(spellIcon)
 		elseif dataSource[dataID][tablenum][i].itemID then
-			iconFrame:SetTexture(GetItemIcon(itemID))
+			local icon = item:GetIcon()
+			iconFrame:SetTexture(icon)
 		end
 
 		if iconFrame:GetTexture() == nil and dataSource[dataID][tablenum][i].icon ~= "Blank" then
@@ -965,12 +969,11 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 		itemButton:Show()
 	end
 
-	local function getItemData(itemID, i, orgItemID)
-		local item = Item:CreateFromID(itemID)
+	local function getItemData(itemID, i, orgItemID, item)
 		self:ItemsLoading(1)
 		item:ContinueOnLoad(function(itemID)
 			self:ItemsLoading(-1)
-			setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup)
+			setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, item)
 		end)
 	end
 
@@ -987,11 +990,15 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 			if isValid and toShow then
 				hightlightFrame:Hide()
 				if itemID then
-					getItemData(itemID, i, orgItemID)
+					local item = Item:CreateFromID(itemID)
+					if not item:GetInfo() then
+						getItemData(itemID, i, orgItemID, item)
+					end
+					setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, item)
 				elseif recipeID then
-					getItemData(recipeID, i)
+					getItemData(recipeID, i, nil, Item:CreateFromID(recipeID))
 				else
-					setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup)
+					setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, Item:CreateFromID(itemID))
 				end
 			else
 				itemButton:Hide()
@@ -1249,16 +1256,36 @@ function AtlasLoot:LoadItemIDsDatabase()
 	content:ParseAsync()
 end
 
+function AtlasLoot:UNIT_SPELLCAST_SUCCEEDED(event, arg1, arg2 , arg3)
+	if arg1 == "player" and arg2 == "Learning" then
+		self:PopulateProfessions()
+	end
+end
+
 function AtlasLoot:PopulateProfessions()
-	if not self.db.profile.knownRecipes then self.db.profile.knownRecipes = {} end
-	for _,prof in pairs(TRADESKILL_RECIPES) do
-	   for _,cat in pairs(prof) do
-		  for _,recipe in pairs(cat) do
-			 if CA_IsSpellKnown(recipe.SpellEntry) then
-				self.db.profile.knownRecipes[recipe.SpellEntry] = true
-			 end
-		  end
-	   end
+	self.db.profile.professions = self.db.profile.professions or {}
+	for _, skillID in pairs(PRIMARY_PROFESSIONS) do
+		local _, _, _, skillMaxRank = GetSkillInfo(skillID)
+		if skillMaxRank and skillMaxRank > 0 then
+			self.db.profile.professions[skillID] = self.db.profile.professions[skillID] or { knownRecipes = {} }
+		end
+	end
+	for _, skillID in pairs(SECONDARY_PROFESSIONS) do
+		local _, _, _, skillMaxRank = GetSkillInfo(skillID)
+		if skillMaxRank and skillMaxRank > 0 then
+			self.db.profile.professions[skillID] = self.db.profile.professions[skillID] or { knownRecipes = {} }
+		end
+	end
+	for prof, _ in pairs(self.db.profile.professions) do
+		if TRADESKILL_RECIPES[prof] then
+			for _,cat in pairs(TRADESKILL_RECIPES[prof]) do
+				for _,recipe in pairs(cat) do
+					if CA_IsSpellKnown(recipe.SpellEntry) then
+						self.db.profile.professions[prof].knownRecipes[recipe.SpellEntry] = true
+					end
+				end
+			end
+		end
 	end
 end
 
