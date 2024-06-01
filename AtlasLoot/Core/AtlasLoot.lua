@@ -151,7 +151,8 @@ function AtlasLoot:OnEnable()
 			{Name = AL["Select a Loot Table..."]},
 		}
     end
-
+	self.db.profile.showUnknownRecipeTooltip = self.db.profile.showUnknownRecipeTooltip or true
+	if self.db.profile.knownRecipes then self.db.profile.knownRecipes  = nil end
 	if IsAddOnLoaded("TomTom") then
 		self.TomTomLoaded = true
 	end
@@ -208,6 +209,7 @@ function AtlasLoot:OnEnable()
 	self:LoadTradeskillRecipes()
 	self:PopulateProfessions()
 	self:CreateVanityCollection()
+	self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 end
 
 function AtlasLoot:Reset(data)
@@ -453,9 +455,9 @@ function AtlasLoot:CreateToken(dataID)
 end
 
 --Creates a sorted and consolidated loottable of all of an xpacs dungeon loot
-function AtlasLoot:CreateOnDemandLootTable(type)
+function AtlasLoot:CreateOnDemandLootTable(typeL)
 	-- Return and show loot table if its already been created
-	if AtlasLoot_OnDemand and AtlasLoot_OnDemand[type] then return self:ShowItemsFrame(type, "AtlasLoot_OnDemand", 1) end
+	if AtlasLoot_OnDemand and AtlasLoot_OnDemand[typeL] then return self:ShowItemsFrame(typeL, "AtlasLoot_OnDemand", 1) end
 	-- Create ondemand loot table if it dosnt exist
 	if not AtlasLoot_OnDemand then AtlasLoot_OnDemand = {} end
 
@@ -489,7 +491,7 @@ function AtlasLoot:CreateOnDemandLootTable(type)
 		if firstLoad then
 			self:ShowItemsFrame(AtlasLootItemsFrame.refresh[1], AtlasLootItemsFrame.refresh[2], AtlasLootItemsFrame.refresh[3])
 		else
-			self:ShowItemsFrame(type, "AtlasLoot_OnDemand", 1)
+			self:ShowItemsFrame(typeL, "AtlasLoot_OnDemand", 1)
 			firstLoad = true
 		end
 	end
@@ -504,18 +506,18 @@ function AtlasLoot:CreateOnDemandLootTable(type)
 		else
 			tinsert(unsorted[armorSubType]["Misc"], {item, armorType})
 		end
-		AtlasLoot_OnDemand[type] = {Name = "All Dungeon Items", Type = type, filter = true }
+		AtlasLoot_OnDemand[typeL] = {Name = "All Dungeon Items", Type = typeL, filter = true }
 
 		for aType, v in pairs(unsorted) do
 			for eLoc, t in pairs(v) do
 				for i, items in ipairs(t) do
 					local name = equipSlot[getEquip(eLoc)] and aType.." "..items[2].." - "..equipSlot[getEquip(eLoc)] or aType
 					if #t > 30 and (i == 1 or i == 31 or i == 61 or i == 91)  then
-						tinsert(AtlasLoot_OnDemand[type],{Name = correctText(name)..WHITE.." - Page".. math.ceil(i/30) })
+						tinsert(AtlasLoot_OnDemand[typeL],{Name = correctText(name)..WHITE.." - Page".. math.ceil(i/30) })
 					elseif i == 1 then
-						tinsert(AtlasLoot_OnDemand[type],{Name = correctText(name)})
+						tinsert(AtlasLoot_OnDemand[typeL],{Name = correctText(name)})
 					end
-					tinsert(AtlasLoot_OnDemand[type][#AtlasLoot_OnDemand[type]], items[1])
+					tinsert(AtlasLoot_OnDemand[typeL][#AtlasLoot_OnDemand[typeL]], items[1])
 				end
 			end
 		end
@@ -549,10 +551,10 @@ function AtlasLoot:CreateOnDemandLootTable(type)
 	local itemList = {}
 	local checkList = {}
 	for _, data in pairs(AtlasLoot_Data) do
-		if data.Type == type then
+		if data.Type == typeL then
 			for _, t in ipairs(data) do
 				for _, itemData in pairs(t) do
-					if itemData.itemID and not checkList[itemData.itemID] then
+					if type(itemData) == "table" and itemData.itemID and not checkList[itemData.itemID] then
 						itemData.dropLoc = {data.DisplayName or data.Name, t.Name}
 						checkList[itemData.itemID] = true
 						tinsert(itemList, {itemData})
@@ -582,6 +584,8 @@ function AtlasLoot:CreateOnDemandLootTable(type)
 	return continue()
 end
 
+
+local lastTablenum = 1
 --[[
 AtlasLoot:ShowItemsFrame(dataID, dataSource, tablenum):
 dataID - Name of the loot table
@@ -710,6 +714,13 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 		return
 	end
 
+	if dataSource ~= self.dataSourceBackup and tablenum ~= lastTablenum then
+		for i = 1, 30, 1 do
+			_G["AtlasLootItem_"..i]:Hide()
+			_G["AtlasLootItem_"..i.."_Highlight"]:Hide()
+		end
+	end
+
 	-- find the right itemID for the difficulty selected
 	local function getProperItemConditionals(item)
 		isValid = false
@@ -751,7 +762,7 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 	end
 
 	-- Setup the button for the to be displayed item/spell
-	local function setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup)
+	local function setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, item)
 		local text, extra
 		local itemName, itemQuality, itemSubType, itemEquipLoc, itemColor
 		local spellName, spellIcon
@@ -772,7 +783,7 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 				text = self:FixText(text)
 			end
 			if itemID then
-				text = select(4,GetItemQualityColor(select(3,GetItemInfo(itemID))))..text
+				text = select(4,GetItemQualityColor(item:GetQuality()))..text
 			end
 			--Adds button highlights if you know a recipe or have a char that knows one
 			if CA_IsSpellKnown(spellID) then
@@ -782,15 +793,16 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 			else
 				itemButton.hasTrade = false
 				hightlightFrame:Hide()
-				for key,v in pairs(self.db.profiles) do
-					if gsub(key,"-",""):match(gsub(realmName,"-","")) and v.knownRecipes and v.knownRecipes[spellID] then
-						hightlightFrame:SetTexture(itemHighlightBlue)
-						hightlightFrame:Show()
-					end
+				if self:GetKnownRecipes(spellID) then
+					hightlightFrame:SetTexture(itemHighlightBlue)
+					hightlightFrame:Show()
 				end
+
 			end
 		elseif itemID then
 			itemName, _, itemQuality, _, _, _, itemSubType, _, itemEquipLoc, _ = GetItemInfo(itemID)
+			itemName = itemName or item:GetName()
+			itemSubType = itemSubType or AtlasLoot_ExtraData["ArmorConversion"][item:GetSubClassID()]
 				if not itemName then
 					itemID = orgItemID
 					itemName, _, itemQuality, _, _, _, itemSubType, _, itemEquipLoc, _ = GetItemInfo(itemID)
@@ -801,8 +813,8 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 				text = dataSource[dataID][tablenum][i].name
 				text = self:FixText(text)
 			elseif itemName then
-				_, _, _, itemColor = GetItemQualityColor(itemQuality)
-				text = itemColor..itemName
+				itemQuality = itemQuality or item:GetQuality()
+				text = itemQuality and select(4,GetItemQualityColor(itemQuality))..itemName or itemName
 			else
 				text = ""
 			end
@@ -886,7 +898,8 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 		elseif spellIcon then
 			iconFrame:SetTexture(spellIcon)
 		elseif dataSource[dataID][tablenum][i].itemID then
-			iconFrame:SetTexture(GetItemIcon(itemID))
+			local icon = item:GetIcon()
+			iconFrame:SetTexture(icon)
 		end
 
 		if iconFrame:GetTexture() == nil and dataSource[dataID][tablenum][i].icon ~= "Blank" then
@@ -956,12 +969,11 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 		itemButton:Show()
 	end
 
-	local function getItemData(itemID, i, orgItemID)
-		local item = Item:CreateFromID(itemID)
+	local function getItemData(itemID, i, orgItemID, item)
 		self:ItemsLoading(1)
 		item:ContinueOnLoad(function(itemID)
 			self:ItemsLoading(-1)
-			setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup)
+			setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, item)
 		end)
 	end
 
@@ -978,11 +990,15 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 			if isValid and toShow then
 				hightlightFrame:Hide()
 				if itemID then
-					getItemData(itemID, i, orgItemID)
+					local item = Item:CreateFromID(itemID)
+					if not item:GetInfo() then
+						getItemData(itemID, i, orgItemID, item)
+					end
+					setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, item)
 				elseif recipeID then
-					getItemData(recipeID, i)
+					getItemData(recipeID, i, nil, Item:CreateFromID(recipeID))
 				else
-					setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup)
+					setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, Item:CreateFromID(itemID))
 				end
 			else
 				itemButton:Hide()
@@ -1115,6 +1131,8 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 		end
 	end
 
+	lastTablenum = tablenum
+
 	--Anchor the item frame where it is supposed to be
 	if self.filterEnable and dataID ~= "FilterList" then
 		self:HideFilteredItems()
@@ -1123,6 +1141,7 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 		--preload items from the rest of the instance table
 		self:PreLoadLootTable(dataSource, dataID, ItemindexID)
 	end
+
 end
 
 -- List of Moduel Names
@@ -1237,16 +1256,36 @@ function AtlasLoot:LoadItemIDsDatabase()
 	content:ParseAsync()
 end
 
+function AtlasLoot:UNIT_SPELLCAST_SUCCEEDED(event, arg1, arg2 , arg3)
+	if arg1 == "player" and arg2 == "Learning" then
+		self:PopulateProfessions()
+	end
+end
+
 function AtlasLoot:PopulateProfessions()
-	if not self.db.profile.knownRecipes then self.db.profile.knownRecipes = {} end
-	for _,prof in pairs(TRADESKILL_RECIPES) do
-	   for _,cat in pairs(prof) do
-		  for _,recipe in pairs(cat) do
-			 if CA_IsSpellKnown(recipe.SpellEntry) then
-				self.db.profile.knownRecipes[recipe.SpellEntry] = true
-			 end
-		  end
-	   end
+	self.db.profile.professions = self.db.profile.professions or {}
+	for _, skillID in pairs(PRIMARY_PROFESSIONS) do
+		local _, _, _, skillMaxRank = GetSkillInfo(skillID)
+		if skillMaxRank and skillMaxRank > 0 then
+			self.db.profile.professions[skillID] = self.db.profile.professions[skillID] or { knownRecipes = {} }
+		end
+	end
+	for _, skillID in pairs(SECONDARY_PROFESSIONS) do
+		local _, _, _, skillMaxRank = GetSkillInfo(skillID)
+		if skillMaxRank and skillMaxRank > 0 then
+			self.db.profile.professions[skillID] = self.db.profile.professions[skillID] or { knownRecipes = {} }
+		end
+	end
+	for prof, _ in pairs(self.db.profile.professions) do
+		if TRADESKILL_RECIPES[prof] then
+			for _,cat in pairs(TRADESKILL_RECIPES[prof]) do
+				for _,recipe in pairs(cat) do
+					if CA_IsSpellKnown(recipe.SpellEntry) then
+						self.db.profile.professions[prof].knownRecipes[recipe.SpellEntry] = true
+					end
+				end
+			end
+		end
 	end
 end
 
