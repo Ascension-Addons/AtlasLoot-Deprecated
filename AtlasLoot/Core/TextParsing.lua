@@ -197,6 +197,23 @@ function AtlasLoot:FixText(text)
         text = gsub(text, subTable[1], subTable[2])
     end
 
+    text = gsub(text, ", Herb", "Herbalism")
+    text = gsub(text, ", Meat", "Meat")
+    text = gsub(text, ", Item Enhancement", "Enchant")
+    text = gsub(text, ", Weapon Enchantment", "Enchanting")
+    text = gsub(text, ", Armor Enchantment", "Enchanting")
+    text = gsub(text, ", Scroll", "Scroll")
+    text = gsub(text, ", Holiday", "Holiday")
+    text = gsub(text, ", Metal & Stone", "Metal & Stone")
+    text = gsub(text, ", Potion", "Potion")
+    text = gsub(text, ", Engineering", "Parts")
+    text = gsub(text, ", Simple", "Gems")
+    text = gsub(text, ", Elemental", "Elemental")
+    text = gsub(text, ", Elixir", "Elixir")
+    text = gsub(text, ", Reagent", "Reagent")
+    text = gsub(text, ", Devices", "Devices")
+    text = gsub(text, ", Trade Goods", "Trade Goods")
+    
     local englishFaction, _ = UnitFactionGroup("player")
     if englishFaction == "Horde" then
         text = gsub(text, "#faction#", "|TInterface\\AddOns\\AtlasLoot\\Images\\Horde:14:14:0:-1|t")
