@@ -16,8 +16,6 @@ AtlasLoot:SetFavorites(number)
 AtlasLoot:AddTooltip(frameb, tooltiptext)
 ]]
 
-AtlasLoot = LibStub("AceAddon-3.0"):NewAddon("AtlasLoot", "AceEvent-3.0", "AceTimer-3.0")
-
 local AL = LibStub("AceLocale-3.0"):GetLocale("AtlasLoot")
 local BabbleInventory = AtlasLoot_GetLocaleLibBabble("LibBabble-Inventory-3.0")
 
@@ -37,7 +35,7 @@ AtlasLoot.filterEnable = false
 AtlasLoot.CurrentType = "Default"
 AtlasLoot.type = {}
 AtlasLoot.backEnabled = false
-AtlasLoot.Difficultys = {}
+AtlasLoot.Difficulties = {}
 
 -- Colours stored for code readability
 local GREY = "|cff999999"
@@ -137,6 +135,25 @@ StaticPopupDialogs["ATLASLOOT_SETUP"] = {
 }
 
 --[[
+AtlasLoot:OnInitialize()
+Performs inital setup of the mod and registers it for further setup when
+the required resources are in place
+]]
+function AtlasLoot:OnInitialize()
+	--Enable the use of /al or /atlasloot to open the loot browser
+	SLASH_ATLASLOOT1 = "/atlasloot"
+	SLASH_ATLASLOOT2 = "/al"
+	SlashCmdList["ATLASLOOT"] = function(msg)
+		self:SlashCommand(msg)
+	end
+
+	--Sets the default loot tables for the current expansion enabled on the server.
+	local xpaclist = {"CLASSIC", "TBC", "WRATH"}
+	self.Expac = xpaclist[GetAccountExpansionLevel()+1]
+end
+
+
+--[[
 AtlasLoot:OnEnable():
 Invoked by the VARIABLES_LOADED event.  Now that we are sure all the assets
 the addon needs are in place, we can properly set up the mod
@@ -145,6 +162,7 @@ function AtlasLoot:OnEnable()
     self.db = LibStub("AceDB-3.0"):New("AtlasLootDB")
     self.db:RegisterDefaults(AtlasLootDBDefaults)
 	setupSettingsDB()
+	AtlasLootItemCache = AtlasLootItemCache or {}
     if AtlasLoot_Data then
         AtlasLoot_Data["EmptyTable"] = {
 			Name = AL["Select a Loot Table..."],
@@ -205,7 +223,7 @@ function AtlasLoot:OnEnable()
 	else
 		AtlasLootItemsFrame_Wishlist_UnLock:Enable()
 	end
-	self:LoadItemIDsDatabase()
+	self:LoadMissingIDs()
 	self:LoadTradeskillRecipes()
 	self:PopulateProfessions()
 	self:CreateVanityCollection()
@@ -246,155 +264,22 @@ msg - takes the argument for the /atlasloot command so that the appropriate acti
 If someone types /atlasloot, bring up the options box
 ]]
 function AtlasLoot:SlashCommand(msg)
-	if msg == AL["reset"] then
+	msg = msg or ""
+
+	local cmd, arg1, arg2 = string.split(" ", msg, 3)
+	cmd = string.lower(cmd or "")
+
+	if cmd == AL["reset"] then
 		self:Reset("frames")
-	elseif msg == AL["options"] then
+	elseif cmd == AL["options"] then
 		self:OptionsToggle()
+	elseif cmd == "updatecache" then
+		self:UpdateItemIDsDatabase(tonumber(arg1), tonumber(arg2))
+	elseif cmd == "clearcache" then
+		wipe(AtlasLootItemCache)
 	else
 		AtlasLootDefaultFrame:Show()
 	end
-end
-
---[[
-AtlasLoot:OnInitialize()
-Performs inital setup of the mod and registers it for further setup when
-the required resources are in place
-]]
-function AtlasLoot:OnInitialize()
-	--Enable the use of /al or /atlasloot to open the loot browser
-	SLASH_ATLASLOOT1 = "/atlasloot"
-	SLASH_ATLASLOOT2 = "/al"
-	SlashCmdList["ATLASLOOT"] = function(msg)
-		self:SlashCommand(msg)
-	end
-
-	--Sets the default loot tables for the current expansion enabled on the server.
-	local xpaclist = {"CLASSIC", "TBC", "WRATH"}
-	self.Expac = xpaclist[GetAccountExpansionLevel()+1]
-end
-
-function AtlasLoot:RecipeSource(spellID)
-	if not spellID then return end
-	local cData = AtlasLoot_CraftingData
-	local data = {}
-	-- extra information on where to find the recipe
-	-- trainer learnt
-	local trainer = cData["Trainer"][spellID]
-	if trainer then tinsert(data, {AL["Source"]..": "..WHITE..trainer}) end
-	-- aquire type
-	local aquireType = cData["AquireType"][spellID]
-	if aquireType then
-		tinsert(data, {AL["Source"]..": "..WHITE..cData[aquireType[1]][aquireType[2]][1]})
-	end
-	-- vendor recipe
-	local vendor = cData["Vendor"][spellID]
-	if vendor then
-		tinsert(data, {AL["Source"]..": "..WHITE..AL["Vendor"]})
-		for _,v in pairs(vendor) do
-			local vendor = AtlasLoot_CraftingData["VendorList"][v]
-			tinsert(data, {vendor[1], vendor[2], cords = {vendor[3], vendor[4]}, fac = vendor[5]})
-		end
-	end
-	-- vendor recipe
-	local recipeRepVendor = cData["RecipeRepVendor"][spellID]
-	if recipeRepVendor then
-		tinsert(data, {AL["Source"]..": "..WHITE..AL["Vendor"]})
-		local vendor = AtlasLoot_CraftingData["VendorList"][spellID]
-		for	i = 3, 6 do
-			if vendor and vendor[i] then
-			tinsert(data, {vendor[1], vendor[2], fac = vendor[i]})
-			end
-		end
-	end
-	--limited vendor recipes
-	local limitedVendor = cData["LimitedVendor"][spellID]
-	if limitedVendor then
-		tinsert(data, {AL["Source"]..": "..WHITE..AL["Limited Stock"]})
-		local sort = {}
-		local limited = false
-		for i,v in pairs(limitedVendor) do
-			 if limited then
-				 tinsert(sort[i-1],v)
-				 limited = false
-			 else
-				 sort[i] = {v}
-				 limited = true
-			 end
-		end
-		for _,v in pairs(sort) do
-			 local vendor = AtlasLoot_CraftingData["VendorList"][v[1]]
-			 tinsert(data, {vendor[1], vendor[2], cords = {vendor[3], vendor[4]}, fac = vendor[5], limited = v[2]})
-		end
-	end
-	--mob drop
-	local mobDrop = cData["MobDrop"][spellID]
-	if mobDrop then
-		tinsert(data, {AL["Source"]..": "..WHITE..AL["Mob Drop"]})
-		for _,v in pairs(mobDrop) do
-			local mob = AtlasLoot_CraftingData["MobList"][v]
-			local cords = nil
-			if mob[3] ~= 0 and mob[4] ~= 0 then
-				cords = {mob[3], mob[4]}
-			end
-			tinsert(data, {mob[1], WHITE..mob[2], cords})
-		end
-	end
-	-- World Drop
-	local worldDrop = cData["WorldDrop"][spellID]
-	if worldDrop then
-		tinsert(data, {AL["Source"]..": "..WHITE..AL["World Drop"]})
-		local text = worldDrop[1]
-		if worldDrop[2] then
-			text = text.." / "..worldDrop[2]
-		end
-		tinsert(data, {text})
-	end
-	--quest
-	local questDrop = cData["QuestDrop"][spellID]
-	if questDrop then
-		tinsert(data, {AL["Source"]..": "..WHITE..AL["Quest"]})
-		for _,v in pairs(questDrop) do
-			local quest = AtlasLoot_CraftingData["QuestList"][v]
-			tinsert(data, {quest[1],  quest[2], cords = {quest[3], quest[4]}, fac = quest[5]})
-		end
-	end
-	--rep vendor
-	local repVendor = cData["RepVendor"][spellID]
-	if repVendor then
-		tinsert(data, {AL["Source"]..": "..WHITE..AL["Reputation Vendor"]})
-		local line1, line2
-		local list = {}
-		for i,v in pairs(repVendor) do
-			 if type(v) == "table" then
-				 for i,v in pairs(v) do
-					 if i == 1 then
-						 line1 = AL["Faction"]..": "..WHITE..v
-					 elseif i == 2 then
-						 line2 = AL["Required Reputation"]..": "..WHITE..v
-					 else
-						 tinsert(list,AtlasLoot_CraftingData["VendorList"][v])
-					 end
-				 end
-			 else
-				 if i == 1 then
-					 line1 = AL["Faction"]..": "..WHITE..v
-				 elseif i == 2 then
-					 line2 = AL["Required Reputation"]..": "..WHITE..v
-				 else
-					 tinsert(list,AtlasLoot_CraftingData["VendorList"][v])
-				 end
-			 end
-		end
-		tinsert(data, {line1, line2})
-		for _,v in pairs(list) do
-			local cords
-			if v[3] ~= 0 and v[4] ~= 0 then
-				cords = {v[3], v[4]}
-			end
-			tinsert(data, {v[1], WHITE..v[2], cords, fac = v[5]})
-		end
-	end
-	return data
 end
 
 --Creates tables for raid tokens from the collections tables
@@ -427,7 +312,7 @@ function AtlasLoot:CreateToken(dataID)
 	end
 	local count = #AtlasLoot_Data[dataID][1] * #AtlasLoot_Data[dataID]
 	local function addItem(itemID, desc)
-		if itemType == select(9, GetItemInfo(itemID)) or itemType2 == select(9, GetItemInfo(itemID)) then
+		if itemType == select(9, AtlasLoot:GetItemInfo(itemID)) or itemType2 == select(9, AtlasLoot:GetItemInfo(itemID)) then
 			table.insert(AtlasLoot_TokenData[orgID][1], {itemID = itemID, desc = desc})
 		end
 		if count == 1 then
@@ -439,14 +324,7 @@ function AtlasLoot:CreateToken(dataID)
 	for _, t in ipairs(AtlasLoot_Data[dataID]) do
 		for _, v in ipairs(t) do
 			if type(v) == "table" then
-				local item = Item:CreateFromID(v.itemID)
-				if v.itemID and not item:GetInfo() then
-					self:ItemsLoading(1)
-					item:ContinueOnLoad(function()
-						self:ItemsLoading(-1)
-						addItem(v.itemID, t.Name)
-					end)
-				else
+				if v.itemID then
 					addItem(v.itemID, t.Name)
 				end
 			end
@@ -468,7 +346,7 @@ function AtlasLoot:CreateOnDemandLootTable(typeL)
 		INVTYPE_LEGS = BabbleInventory["Legs"], INVTYPE_FEET = BabbleInventory["Feet"], INVTYPE_FINGER = BabbleInventory["Ring"],
 		INVTYPE_CLOAK = BabbleInventory["Back"], INVTYPE_NECK = BabbleInventory["Neck"], INVTYPE_WEAPONOFFHAND = BabbleInventory["Off Hand"],
 		INVTYPE_WEAPONMAINHAND = "Mainhand", INVTYPE_TRINKET = "Trinket", INVTYPE_HOLDABLE = "Caster Offhand"}
-	
+
 	local function correctText(text)
 		text = gsub(text, "Cloth Armor %- Back", "Back")
 		text = gsub(text, "Miscellaneous Armor %- " , "")
@@ -476,7 +354,7 @@ function AtlasLoot:CreateOnDemandLootTable(typeL)
 		text = gsub(text, "Weapon %- " , WHITE.."%- ")
 		return text
 	end
-	
+
 	-- Combind robes with chest
 	local function getEquip(equipLoc)
 		if equipLoc == "INVTYPE_ROBE" then
@@ -527,22 +405,11 @@ function AtlasLoot:CreateOnDemandLootTable(typeL)
 	-- Load items to cache and check they are either an armor or weapon
 	local function processItem(itemData)
 		if not itemData then return end
-		local item = Item:CreateFromID(itemData.itemID)
 		if itemData.itemID then
-			if not item:GetInfo() then
-				item:ContinueOnLoad(function()
-					self:ItemsLoading(-1)
-					local armorType, armorSubType, _, equipLoc = select(6,GetItemInfo(itemData.itemID))
-					if (armorType == "Armor" or armorType == "Weapon") then
-						sortItem(itemData, armorSubType, equipLoc, armorType)
-					end
-				end)
-			else
-				self:ItemsLoading(-1)
-				local armorType, armorSubType, _, equipLoc = select(6,GetItemInfo(itemData.itemID))
-				if (armorType == "Armor" or armorType == "Weapon") then
-					sortItem(itemData, armorSubType, equipLoc, armorType)
-				end
+			self:ItemsLoading(-1)
+			local armorType, armorSubType, _, equipLoc = select(6,AtlasLoot:GetItemInfo(itemData.itemID))
+			if (armorType == "Armor" or armorType == "Weapon") then
+				sortItem(itemData, armorSubType, equipLoc, armorType)
 			end
 		end
 	end
@@ -550,12 +417,13 @@ function AtlasLoot:CreateOnDemandLootTable(typeL)
 	--Fills table with items
 	local itemList = {}
 	local checkList = {}
-	for _, data in pairs(AtlasLoot_Data) do
+	for dataID, data in pairs(AtlasLoot_Data) do
 		if data.Type == typeL then
-			for _, t in ipairs(data) do
+			for tableNum, t in ipairs(data) do
 				for _, itemData in pairs(t) do
 					if type(itemData) == "table" and itemData.itemID and not checkList[itemData.itemID] then
 						itemData.dropLoc = {data.DisplayName or data.Name, t.Name}
+						itemData.lootTable = {{dataID, "AtlasLoot_Data", tableNum}, "Source"}
 						checkList[itemData.itemID] = true
 						tinsert(itemList, {itemData})
 					end
@@ -640,7 +508,7 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 
 	local difType = false
 	-- Checks to see if type is the same
-	if self.CurrentType and self.CurrentType ~= dataSource[dataID].Type then
+	if self.CurrentType and dataSource[dataID].Type and self.CurrentType ~= dataSource[dataID].Type then
 		ItemindexID = self.type[dataSource[dataID].Type] or 2
 		difType = true
 	end
@@ -652,7 +520,7 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 	-- Set current type
 	self.CurrentType = dataSource[dataID].Type or "Default"
 
-	-- Loads the difficultys into the scrollFrame
+	-- Loads the Difficulties into the scrollFrame
 	if dataSource[dataID].ListType then
 		self:ScrollFrameUpdate(nil,dataSource[dataID].ListType)
 	else
@@ -662,7 +530,7 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 	-- Finds the tablenumber to set where the difficulty slider should be.
 	local typeNumber = 1
 	local function findTypeNumber()
-		for i,v in ipairs(self.Difficultys[dataSource[dataID].Type]) do
+		for i,v in ipairs(self.Difficulties[dataSource[dataID].Type]) do
 			if v[2] == ItemindexID then
 				typeNumber = i
 				return i
@@ -675,9 +543,9 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 	end
 
 	-- Moves the difficulty scrollslider if the difficulty has changed
-	if dataSource[dataID].Type and difType and #self.Difficultys[dataSource[dataID].Type] > 5 and findTypeNumber() > 5 then
+	if dataSource[dataID].Type and difType and #self.Difficulties[dataSource[dataID].Type] > 5 and findTypeNumber() > 5 then
 		local min, max = AtlasLootDefaultFrameScrollScrollBar:GetMinMaxValues()
-		AtlasLootDefaultFrameScrollScrollBar:SetValue(typeNumber * (max / #self.Difficultys[dataSource[dataID].Type]))
+		AtlasLootDefaultFrameScrollScrollBar:SetValue(typeNumber * (max / #self.Difficulties[dataSource[dataID].Type]))
 	end
 
 	-- Moves the difficulty scrollslider if wishlist
@@ -731,24 +599,23 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 		if item and item.itemID then
 			itemID = item.itemID
 			isValid = true
-
-			if(item[self.Difficultys.MIN_DIF]) then
-				if item[self.Difficultys.MIN_DIF] > itemDif then
+			local itemType = item.Type or dataSource[dataID].Type
+			if(item[self.Difficulties.MIN_DIF]) then
+				if item[self.Difficulties.MIN_DIF] > itemDif then
 					toShow = false
 				end
-				itemID = self:FindId(item.itemID, min(self:getMaxDifficulty(item.Type or dataSource[dataID].Type), itemDif), item.Type or dataSource[dataID].Type, dataSource[dataID].Type ) or item.itemID
+				itemID = self:FindId(item.itemID, min(self:getMaxDifficulty(itemType), itemDif), itemType) or item.itemID
 			end
 
 			if toShow then
 				--Sets ItemindexID to normal(2) if it is nil for min/max difficulties.
-				if not tonumber(itemDif) then itemDif = self.Difficultys.Normal end
-
+				if not tonumber(itemDif) then itemDif = self.Difficulties.Normal end
 				--Checks if an item has a Maximum difficulty, this is to correct some items that have an entry for higher difficulties then they really do
-				if item[self.Difficultys.MAX_DIF] then
-					if tonumber(item[self.Difficultys.MAX_DIF]) < itemDif then itemDif = item[self.Difficultys.MAX_DIF] end
+				if itemDif ~= 100 and self.Difficulties[itemType] and self.Difficulties[itemType].Max and self.Difficulties[itemType].Max < itemDif then
+					itemDif = self.Difficulties[itemType].Max
 				end
 				--If something was found in itemID database show that if not show default table item
-				itemID = self:FindId(item.itemID, itemDif, item.Type or dataSource[dataID].Type, dataSource[dataID].Type) or item.itemID
+				itemID = self:FindId(item.itemID, itemDif, itemType) or item.itemID
 			end
 		elseif item and (item.spellID or item.icon) or item and itemID then
 			isValid = true
@@ -762,9 +629,13 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 	end
 
 	-- Setup the button for the to be displayed item/spell
-	local function setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, item)
+	local function setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup)
 		local text, extra
-		local itemName, itemQuality, itemSubType, itemEquipLoc, itemColor
+		local itemName, itemQuality, itemSubType, itemEquipLoc, itemIcon
+		if itemID then
+			itemName, _, itemQuality, _, _, _, itemSubType, _, itemEquipLoc, itemIcon = AtlasLoot:GetItemInfo(itemID)
+		end
+
 		local spellName, spellIcon
 		--Use shortcuts for easier reference to parts of the item button
 		local itemButton = _G["AtlasLootItem_"..i]
@@ -783,7 +654,7 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 				text = self:FixText(text)
 			end
 			if itemID then
-				text = select(4,GetItemQualityColor(item:GetQuality()))..text
+				text = select(4,GetItemQualityColor(itemQuality))..text
 			end
 			--Adds button highlights if you know a recipe or have a char that knows one
 			if CA_IsSpellKnown(spellID) then
@@ -800,21 +671,13 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 
 			end
 		elseif itemID then
-			itemName, _, itemQuality, _, _, _, itemSubType, _, itemEquipLoc, _ = GetItemInfo(itemID)
-			itemName = itemName or item:GetName()
-			itemSubType = itemSubType or AtlasLoot_ExtraData["ArmorConversion"][item:GetSubClassID()]
-				if not itemName then
-					itemID = orgItemID
-					itemName, _, itemQuality, _, _, _, itemSubType, _, itemEquipLoc, _ = GetItemInfo(itemID)
-				end
 			--If the client has the name of the item in cache, use that instead.					
 			if dataSource[dataID][tablenum][i].name then
 				--If it has a manuel entry use that
 				text = dataSource[dataID][tablenum][i].name
 				text = self:FixText(text)
 			elseif itemName then
-				itemQuality = itemQuality or item:GetQuality()
-				text = itemQuality and select(4,GetItemQualityColor(itemQuality))..itemName or itemName
+				text = select(4,GetItemQualityColor(itemQuality))..itemName
 			else
 				text = ""
 			end
@@ -856,9 +719,11 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 			local lvls = AtlasLoot_CraftingData["CraftingLevels"][spellID]
 			extra = LIMEGREEN .. "L-Click:|r "..WHITE..dataSource[dataID].Name.." ( "..ORANGE..lvls[1].."|r "..YELLOW..lvls[2].."|r "..GREEN..lvls[3].."|r "..GREY..lvls[4]..WHITE.." )"
 		elseif dataSource[dataID][tablenum][i].lootTable and dataSource[dataID][tablenum][i].lootTable[2] == "Token" then
-			extra = "#setToken#"
-		elseif itemEquipLoc and itemSubType then
+			extra = AL["Set Token (Click)"]
+		elseif itemEquipLoc and itemEquipLoc ~= "" and itemSubType then
 			extra = "=ds="..itemEquipLoc..", "..itemSubType
+		elseif itemSubType then
+			extra = "=ds="..itemSubType
 		else
 			extra = ""
 		end
@@ -894,12 +759,9 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 		elseif dataSource[dataID][tablenum][i].icon then
 			iconFrame:SetTexture("Interface\\Icons\\"..dataSource[dataID][tablenum][i].icon)
 		elseif dataSource[dataID][tablenum][i].itemID then
-			iconFrame:SetTexture(GetItemIcon(dataSource[dataID][tablenum][i].itemID))
+			iconFrame:SetTexture(itemIcon)
 		elseif spellIcon then
 			iconFrame:SetTexture(spellIcon)
-		elseif dataSource[dataID][tablenum][i].itemID then
-			local icon = item:GetIcon()
-			iconFrame:SetTexture(icon)
 		end
 
 		if iconFrame:GetTexture() == nil and dataSource[dataID][tablenum][i].icon ~= "Blank" then
@@ -942,7 +804,7 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 			itemButton.dressingroomID = itemID
 		end
 
-		itemButton.craftingData = self:RecipeSource(spellID)
+		itemButton.craftingData = self:GetRecipeSource(spellID)
 		itemButton.tablenum = tablenum
 		itemButton.dataID = dataID
 		itemButton.dataSource = dataSource_backup
@@ -959,8 +821,8 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 			itemButton.sourcePage = nil
 		end
 
-		if dataSource[dataID][tablenum][i][self.Difficultys.DIF_SEARCH] then
-			itemButton.difficulty = dataSource[dataID][tablenum][i][self.Difficultys.DIF_SEARCH]
+		if dataSource[dataID][tablenum][i][self.Difficulties.DIF_SEARCH] then
+			itemButton.difficulty = dataSource[dataID][tablenum][i][self.Difficulties.DIF_SEARCH]
 		else
 			itemButton.difficulty = ItemindexID
 		end
@@ -973,7 +835,7 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 		self:ItemsLoading(1)
 		item:ContinueOnLoad(function(itemID)
 			self:ItemsLoading(-1)
-			setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, item)
+			setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup)
 		end)
 	end
 
@@ -994,11 +856,11 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 					if not item:GetInfo() then
 						getItemData(itemID, i, orgItemID, item)
 					end
-					setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, item)
+					setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup)
 				elseif recipeID then
 					getItemData(recipeID, i, nil, Item:CreateFromID(recipeID))
 				else
-					setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, Item:CreateFromID(itemID))
+					setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup)
 				end
 			else
 				itemButton:Hide()
@@ -1137,11 +999,6 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 	if self.filterEnable and dataID ~= "FilterList" then
 		self:HideFilteredItems()
 	end
-	if dataID ~= "SearchResult" and dataSource_backup ~= "AtlasLoot_OnDemand" then
-		--preload items from the rest of the instance table
-		self:PreLoadLootTable(dataSource, dataID, ItemindexID)
-	end
-
 end
 
 -- List of Moduel Names
@@ -1203,57 +1060,6 @@ function AtlasLoot:SetFavorites(num)
     else
         AtlasLootCharDB["QuickLooks"][num]={AtlasLootItemsFrame.refreshOri[1], AtlasLootItemsFrame.refreshOri[2], AtlasLootItemsFrame.refreshOri[3], self.lastModule, self.currentTable, _G[AtlasLootItemsFrame.refreshOri[2]][AtlasLootItemsFrame.refreshOri[1]][AtlasLootItemsFrame.refreshOri[3]].Name}
     end
-end
-
--- Used to precache all the items in a raid/instance
-local isLoaded = {}
-function AtlasLoot:PreLoadLootTable(dataSource, dataID, ItemindexID)
-	if isLoaded[dataID] and isLoaded[dataID][ItemindexID] then return end
-	for _, instance in ipairs(dataSource[dataID]) do
-		for _, boss in pairs(instance) do
-			if type(boss) == "table" then
-				local itemID = ItemIDsDatabase[boss.itemID] and ItemIDsDatabase[boss.itemID][ItemindexID] or boss.itemID
-				if itemID then
-					local item = Item:CreateFromID(itemID)
-					if item and not item:GetInfo() then
-						self:ItemsLoading(1)
-						item:ContinueOnLoad(function(itemID)
-							self:ItemsLoading(-1)
-						end)
-					end
-				end
-			end
-		end
-	end
-	if not isLoaded[dataID] then isLoaded[dataID] = {} end
-	isLoaded[dataID][ItemindexID] = true
-end
-
-
-
-
--- Loads the Item Variations into a table from the data content folder
-function AtlasLoot:LoadItemIDsDatabase()
-	local content = C_ContentLoader:Load("ItemVariationData")
-	content:SetParser(function(index, data)
-		-- run for each item in the data
-	if index ~= 0 and data.Normal ~= 0 and not ItemIDsDatabase[data.Normal] then
-			ItemIDsDatabase[data.Normal] = {}
-			ItemIDsDatabase[data.Normal]["MythicRaid"] = tonumber("13"..data.Normal)
-			table.insert(ItemIDsDatabase[data.Normal],data.Bloodforged)
-			table.insert(ItemIDsDatabase[data.Normal],data.HeroicBloodforged)
-			table.insert(ItemIDsDatabase[data.Normal],data.Normal)
-			if data.Heroic ~= 0 then table.insert(ItemIDsDatabase[data.Normal],data.Heroic) end
-				for _,v in ipairs(data["Mythic"]) do
-					if v ~= 0 then
-						table.insert(ItemIDsDatabase[data.Normal],v)
-					end
-				end
-		end
-	end)
-
-	-- This will run over time (usually about 30s for a file this size), but will maintain playable fps while running.
-	content:ParseAsync()
 end
 
 function AtlasLoot:UNIT_SPELLCAST_SUCCEEDED(event, arg1, arg2 , arg3)

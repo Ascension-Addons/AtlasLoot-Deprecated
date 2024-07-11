@@ -15,6 +15,10 @@ local AL = AceLocale:NewLocale("AtlasLoot", "enUS", true)
 --Register translations
 if AL then
 
+	AL["Item"] = true
+	AL["Auction House Search"] = true
+	AL["Created Item"] = true
+	AL["Recipe"] = true
 	AL["Mystic Enchanting"] = true
 	AL["Druid"] = true
 	AL["Open AscensionDB To Zone Map"] = true
@@ -425,6 +429,12 @@ if AL then
 	AL["Two-Handed Mace"] = true
 	AL["Two-Handed Sword"] = true
 	AL["One-Handed Sword"] = true
+	AL["Main-Hand Fist Weapon"] = true
+	AL["Main-Hand Mace"] = true
+	AL["Main-Hand Dagger"] = true
+	AL["Main-Hand Sword"] = true
+	AL["Off-Hand Sword"] = true
+	AL["Off-Hand Fist Weapon"] = true
 
 	AL["Herbalism"] = true
 

@@ -120,54 +120,45 @@ function AtlasLoot:OpenDB(frame, type, text)
     self:OpenDewdropMenu(frame, menuList)
 end
 
---[[
-AtlasLoot:FindId(id, difficulty)
-Finds the Ids of other difficulties based on the normal id of the item and the difficulty parameter given.
-On the form of {ID, {normal, heroic, mythic, mythic1, mythic2, ... ,mythicN}}
-]]
-function AtlasLoot:FindId(id, difficulty, type, sourceType)
-	if not ItemIDsDatabase[id] then return nil, false end
-	if difficulty == 100 then
-		local newIDs = {
-			(id < 1000000 and (id) + 6300000),
-			(id < 1000000 and (id) + 7800000),
-			(id > 1000000 and (id - 1500000) + 6300000),
-			(id > 1000000 and (id - 1500000) + 7800000),
-	}
-		for _, newID in ipairs(newIDs) do
-		local ogName = GetItemInfoInstant(id)
-			local newName = GetItemInfoInstant(newID)
-			if newName and ogName and string.find(newName.name, ogName.name) then
-				return  newID, true
-			end
+local itemEquipLocConversion = {
+	"INVTYPE_HEAD",
+	"INVTYPE_NECK",
+	"INVTYPE_SHOULDER",
+	"INVTYPE_BODY",
+	"INVTYPE_CHEST",
+	"INVTYPE_WAIST",
+	"INVTYPE_LEGS",
+	"INVTYPE_FEET",
+	"INVTYPE_WRIST",
+	"INVTYPE_HAND",
+	"INVTYPE_FINGER",
+	"INVTYPE_TRINKET",
+	"INVTYPE_WEAPON",
+	"INVTYPE_SHIELD",
+	"INVTYPE_RANGED",
+	"INVTYPE_CLOAK",
+	"INVTYPE_2HWEAPON",
+	"INVTYPE_BAG",
+	"INVTYPE_TABARD",
+	"INVTYPE_ROBE",
+	"INVTYPE_WEAPONMAINHAND",
+	"INVTYPE_WEAPONOFFHAND",
+	"INVTYPE_HOLDABLE",
+	"INVTYPE_AMMO",
+	"INVTYPE_THROWN",
+	"INVTYPE_RANGEDRIGHT",
+	"INVTYPE_QUIVER",
+	"INVTYPE_RELIC",
+}
+function AtlasLoot:GetItemInfo(itemID)
+	local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice = GetItemInfo(itemID)
+	if not itemName then
+		local item = GetItemInfoInstant(itemID)
+		if item then
+			itemName, itemSubType, itemEquipLoc, itemTexture, itemQuality = item.name, _G["ITEM_SUBCLASS_"..item.classID.."_"..item.subclassID], itemEquipLocConversion[item.inventoryType], item.icon, item.quality
 		end
-		return ItemIDsDatabase[id]["HeroicBloodforged"], true
 	end
-
-	if difficulty == 1 then
-		local newIDs = {
-			(id < 1000000 and (id) + 6000000),
-			(id < 1000000 and (id) + 7500000),
-			(id > 1000000 and (id - 1500000) + 6000000),
-			(id > 1000000 and (id - 1500000) + 7500000),
-	}
-		for _, newID in ipairs(newIDs) do
-		local ogName = GetItemInfoInstant(id)
-			local newName = GetItemInfoInstant(newID)
-			if newName and ogName and string.find(newName.name, ogName.name) then
-				return  newID, true
-			end
-		end
-	end
-
-	if (difficulty == 4 and (type == "BCRaid" or type == "ClassicRaid") and sourceType == "Search") or
-	(difficulty == 5 and (type == "BCRaid" or type == "ClassicRaid") and sourceType ~= "Search") then
-		return ItemIDsDatabase[id]["MythicRaid"], true
-	end
-	if (difficulty == 5 and (type == "BCRaid" or type == "ClassicRaid") and sourceType == "Search") then
-		difficulty = 4
-	end
-	return ItemIDsDatabase[id][difficulty], true
+	return itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice
 end
 
 -- Create enchant tooltip
@@ -210,8 +201,9 @@ function AtlasLoot:GetRecipeData(recipeID, idType)
 		   for _,recipe in pairs(cat) do
 			  if (idType == "spell" and recipeID == recipe.SpellEntry) or (idType == "item" and recipeID == recipe.RecipeItemEntry) then
 				local info = {{recipe.CreatedItemEntry}, "blank", "blank", "blank", "blank", "blank",spellID = recipe.SpellEntry, skillIndex = recipe.SkillIndex}
-				if ItemIDsDatabase[recipe.CreatedItemEntry] and ItemIDsDatabase[recipe.CreatedItemEntry][1] then
-					info[2] = {ItemIDsDatabase[recipe.CreatedItemEntry][1]}
+				local bloodForgedID = self:FindId(recipe.CreatedItemEntry, 1, nil, "Bloodforged")
+				if bloodForgedID then
+					info[2] = {bloodForgedID}
 				end
 				if recipe.RecipeItemEntry and recipe.RecipeItemEntry ~= 0 then
 					local number = 3
@@ -219,7 +211,7 @@ function AtlasLoot:GetRecipeData(recipeID, idType)
 						number = 2
 					end
 					info[number] = {recipe.RecipeItemEntry}
-
+					info.Recipe = recipe.RecipeItemEntry
 				end
 				for _,v in pairs(recipe.Reagents) do
 					tinsert(info, v)
@@ -365,7 +357,7 @@ function AtlasLoot:PopoupItemFrame(frame, data)
 						self:ItemsLoading(-1)
 					end)
 				end
-			local itemData = {GetItemInfo(itemID)}
+			local itemData = {self:GetItemInfo(itemID)}
 			SetItemButtonTexture(button, itemData[10])
 			SetItemButtonQuality(button, itemData[3])
 			
@@ -373,14 +365,14 @@ function AtlasLoot:PopoupItemFrame(frame, data)
 			button.itemTexture = frame.itemTexture
 			local recipe = self:GetRecipeData(itemID, "item")
 			if recipe then
-			button.craftingData = self:RecipeSource(recipe.spellID)
+			button.craftingData = self:GetRecipeSource(recipe.spellID)
 			end
-		if item[2] then
-			SetItemButtonCount(button, item[2])
-		else
-			SetItemButtonCount(button)
-		end
-		button:Show()
+			if item[2] then
+				SetItemButtonCount(button, item[2])
+			else
+				SetItemButtonCount(button)
+			end
+			button:Show()
 		end
 		numberBtns = i
 	end
@@ -554,3 +546,165 @@ local function TooltipHandlerItem(tooltip)
 end
 
 GameTooltip:HookScript("OnTooltipSetItem", TooltipHandlerItem)
+
+function AtlasLoot:StripTextColor(txt)
+	local txt = txt or ""
+	txt = string.gsub( txt, "|c%x%x%x%x%x%x%x%x", "" )
+	txt = string.gsub( txt, "|c%x%x %x%x%x%x%x", "" ) -- the trading parts colour has a space instead of a zero for some weird reason
+	txt = string.gsub( txt, "|r", "" )
+	return txt
+end
+
+function AtlasLoot:CheckIfEmptyTable(table)
+	if next(table) then
+		return false
+	else
+		return true
+	end
+end
+
+function AtlasLoot:GetRecipeSource(spellID)
+	if not spellID then return end
+	local cData = AtlasLoot_CraftingData
+	local data = {}
+	-- extra information on where to find the recipe
+	-- trainer learnt
+	local trainer = cData["Trainer"][spellID]
+	if trainer then tinsert(data, {AL["Source"]..": "..WHITE..trainer}) end
+	-- aquire type
+	local aquireType = cData["AquireType"][spellID]
+	if aquireType then
+		tinsert(data, {AL["Source"]..": "..WHITE..cData[aquireType[1]][aquireType[2]][1]})
+	end
+	-- vendor recipe
+	local vendor = cData["Vendor"][spellID]
+	if vendor then
+		tinsert(data, {AL["Source"]..": "..WHITE..AL["Vendor"]})
+		for _,v in pairs(vendor) do
+			local vendor = AtlasLoot_CraftingData["VendorList"][v]
+			tinsert(data, {vendor[1], vendor[2], cords = {vendor[3], vendor[4]}, fac = vendor[5]})
+		end
+	end
+	-- vendor recipe
+	local recipeRepVendor = cData["RecipeRepVendor"][spellID]
+	if recipeRepVendor then
+		tinsert(data, {AL["Source"]..": "..WHITE..AL["Vendor"]})
+		local vendor = AtlasLoot_CraftingData["VendorList"][spellID]
+		for	i = 3, 6 do
+			if vendor and vendor[i] then
+			tinsert(data, {vendor[1], vendor[2], fac = vendor[i]})
+			end
+		end
+	end
+	--limited vendor recipes
+	local limitedVendor = cData["LimitedVendor"][spellID]
+	if limitedVendor then
+		tinsert(data, {AL["Source"]..": "..WHITE..AL["Limited Stock"]})
+		local sort = {}
+		local limited = false
+		for i,v in pairs(limitedVendor) do
+			 if limited then
+				 tinsert(sort[i-1],v)
+				 limited = false
+			 else
+				 sort[i] = {v}
+				 limited = true
+			 end
+		end
+		for _,v in pairs(sort) do
+			 local vendor = AtlasLoot_CraftingData["VendorList"][v[1]]
+			 tinsert(data, {vendor[1], vendor[2], cords = {vendor[3], vendor[4]}, fac = vendor[5], limited = v[2]})
+		end
+	end
+	--mob drop
+	local mobDrop = cData["MobDrop"][spellID]
+	if mobDrop then
+		tinsert(data, {AL["Source"]..": "..WHITE..AL["Mob Drop"]})
+		for _,v in pairs(mobDrop) do
+			local mob = AtlasLoot_CraftingData["MobList"][v]
+			local cords = nil
+			if mob[3] ~= 0 and mob[4] ~= 0 then
+				cords = {mob[3], mob[4]}
+			end
+			tinsert(data, {mob[1], WHITE..mob[2], cords})
+		end
+	end
+	-- World Drop
+	local worldDrop = cData["WorldDrop"][spellID]
+	if worldDrop then
+		tinsert(data, {AL["Source"]..": "..WHITE..AL["World Drop"]})
+		local text = worldDrop[1]
+		if worldDrop[2] then
+			text = text.." / "..worldDrop[2]
+		end
+		tinsert(data, {text})
+	end
+	--quest
+	local questDrop = cData["QuestDrop"][spellID]
+	if questDrop then
+		tinsert(data, {AL["Source"]..": "..WHITE..AL["Quest"]})
+		for _,v in pairs(questDrop) do
+			local quest = AtlasLoot_CraftingData["QuestList"][v]
+			tinsert(data, {quest[1],  quest[2], cords = {quest[3], quest[4]}, fac = quest[5]})
+		end
+	end
+	--rep vendor
+	local repVendor = cData["RepVendor"][spellID]
+	if repVendor then
+		tinsert(data, {AL["Source"]..": "..WHITE..AL["Reputation Vendor"]})
+		local line1, line2
+		local list = {}
+		for i,v in pairs(repVendor) do
+			 if type(v) == "table" then
+				 for i,v in pairs(v) do
+					 if i == 1 then
+						 line1 = AL["Faction"]..": "..WHITE..v
+					 elseif i == 2 then
+						 line2 = AL["Required Reputation"]..": "..WHITE..v
+					 else
+						 tinsert(list,AtlasLoot_CraftingData["VendorList"][v])
+					 end
+				 end
+			 else
+				 if i == 1 then
+					 line1 = AL["Faction"]..": "..WHITE..v
+				 elseif i == 2 then
+					 line2 = AL["Required Reputation"]..": "..WHITE..v
+				 else
+					 tinsert(list,AtlasLoot_CraftingData["VendorList"][v])
+				 end
+			 end
+		end
+		tinsert(data, {line1, line2})
+		for _,v in pairs(list) do
+			local cords
+			if v[3] ~= 0 and v[4] ~= 0 then
+				cords = {v[3], v[4]}
+			end
+			tinsert(data, {v[1], WHITE..v[2], cords, fac = v[5]})
+		end
+	end
+	return data
+end
+
+-- handle minimap tooltip
+function AtlasLoot:GetTipAnchor(frame)
+    local x, y = frame:GetCenter()
+    if not x or not y then return 'TOPLEFT', 'BOTTOMLEFT' end
+    local hhalf = (x > UIParent:GetWidth() * 2 / 3) and 'RIGHT' or (x < UIParent:GetWidth() / 3) and 'LEFT' or ''
+    local vhalf = (y > UIParent:GetHeight() / 2) and 'TOP' or 'BOTTOM'
+    return vhalf .. hhalf, frame, (vhalf == 'TOP' and 'BOTTOM' or 'TOP') .. hhalf
+end
+
+-- Search Auction House for crafting patern/enchant
+function AtlasLoot:SearchAuctionHouse(text)
+	if not text then return end
+	if BrowseName:IsVisible() then
+		BrowseName:SetText(text)
+		BrowseSearchButton:Click()
+	elseif Atr_Search_Box:IsVisible() then
+		Atr_Search_Box:SetText(text)
+		Atr_Search_Button:Click()
+	end
+
+end
