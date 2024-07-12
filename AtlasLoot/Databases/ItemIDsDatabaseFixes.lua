@@ -28,6 +28,7 @@ ItemIDManuelCorrections[1516963] = { nil, nil, 1816963, 2816963, 1716963 }
 ItemIDManuelCorrections[1516900] = { nil, nil, 1816900, 2816900, 1716900 }
 ItemIDManuelCorrections[1516892] = { nil, nil, 1816892, 2816892, 1716892 }
 
+
 --ZA Bears
 ItemIDManuelCorrections[1333809] = { nil, nil, 1433809, nil, 1233809 }
 

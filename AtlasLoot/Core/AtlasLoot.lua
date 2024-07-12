@@ -629,7 +629,7 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 	end
 
 	-- Setup the button for the to be displayed item/spell
-	local function setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, item)
+	local function setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup)
 		local text, extra
 		local itemName, itemQuality, itemSubType, itemEquipLoc, itemIcon
 		if itemID then
@@ -835,7 +835,7 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 		self:ItemsLoading(1)
 		item:ContinueOnLoad(function(itemID)
 			self:ItemsLoading(-1)
-			setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, item)
+			setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup)
 		end)
 	end
 
@@ -860,7 +860,7 @@ function AtlasLoot:ShowItemsFrame(dataID, dataSource_backup, tablenum)
 				elseif recipeID then
 					getItemData(recipeID, i, nil, Item:CreateFromID(recipeID))
 				else
-					setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup, Item:CreateFromID(itemID))
+					setupButton(itemID, i, dataSource, dataID, tablenum, dataSource_backup)
 				end
 			else
 				itemButton:Hide()
