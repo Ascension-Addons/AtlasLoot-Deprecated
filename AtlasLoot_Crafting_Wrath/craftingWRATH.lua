@@ -80,7 +80,7 @@ local TAILORING = GetSpellInfo(3908);
 AtlasLoot_Data["AlchemyWRATH"] = {
 	Module = "AtlasLoot_Crafting_Wrath";
 	Name = ALCHEMY;
-	Type = "Crafting";
+	Type = "WrathCrafting";
 	{
 		Name = AL["Battle Elixirs"];
 		[1] = {itemID = 44330, spellID = 60365 }; --Elixir of Armor Piercing
@@ -182,7 +182,7 @@ AtlasLoot_Data["AlchemyWRATH"] = {
 AtlasLoot_Data["SmithingWRATH"] = {
 	Module = "AtlasLoot_Crafting_Wrath";
 	Name = BLACKSMITHING;
-	Type = "Crafting";
+	Type = "WrathCrafting";
 	{
 		Name = BabbleInventory["Armor"] .. WHITE .. " - Chest";
 		[1] = { spellID = 67130, itemID = 47592 };
@@ -421,7 +421,7 @@ AtlasLoot_Data["SmithingWRATH"] = {
 AtlasLoot_Data["CookingWRATH"] = {
 	Module = "AtlasLoot_Crafting_Wrath";
 	Name = COOKING;
-	Type = "Crafting";
+	Type = "WrathCrafting";
 	{
 		Name = COOKING;
 		[1] = {itemID = 43015, spellID = 57423 }; --Fish Feast
@@ -580,7 +580,7 @@ AtlasLoot_Data["EnchantingWRATH"] = {
 AtlasLoot_Data["EngineeringWRATH"] = {
 	Module = "AtlasLoot_Crafting_Wrath";
 	Name = ENGINEERING;
-	Type = "Crafting";
+	Type = "WrathCrafting";
 	{
 		Name = "Ammo";
 		[1] = {itemID = 52021, spellID = 72953 }; --Iceblade Arrow
@@ -705,7 +705,7 @@ AtlasLoot_Data["EngineeringWRATH"] = {
 AtlasLoot_Data["Inscription"] = {
 	Module = "AtlasLoot_Crafting_Wrath";
 	Name = INSCRIPTION;
-	Type = "Crafting";
+	Type = "WrathCrafting";
 	{
 		Name = AL["Off-Hand Items"];
 		[1] = {itemID = 44210, spellID = 59498 }; --Faces of Doom
@@ -1230,7 +1230,7 @@ AtlasLoot_Data["Inscription"] = {
 AtlasLoot_Data["JewelcraftingWRATH"] = {
 	Module = "AtlasLoot_Crafting_Wrath";
 	Name = JEWELCRAFTING;
-	Type = "Crafting";
+	Type = "WrathCrafting";
 	{
 		Name = AL["Red Gems"];
 		[1] = {itemID = 40111, spellID = 66447 }; --Bold Cardinal Ruby
@@ -1547,9 +1547,9 @@ AtlasLoot_Data["JewelcraftingWRATH"] = {
 		[4] = {itemID = 43582, spellID = 58954 }; --Titanium Frostguard Ring
 		[5] = {itemID = 31398, spellID = 38503 }; --The Frozen Eye
 		[6] = {itemID = 31399, spellID = 38504 }; --The Natural Ward
-		[7] = {itemID = 34361, spellID = 46124 }; --Hard Khorium Band", "=ds=#sr# 365
-		[8] = {itemID = 34362, spellID = 46122 }; --Loop of Forged Power", "=ds=#sr# 365
-		[9] = {itemID = 34363, spellID = 46123 }; --Ring of Flowing Life", "=ds=#sr# 365
+		[7] = {itemID = 34361, spellID = 46124 }; --Hard Khorium Band", "=ds="..AL["Skill Required:"].." 365
+		[8] = {itemID = 34362, spellID = 46122 }; --Loop of Forged Power", "=ds="..AL["Skill Required:"].." 365
+		[9] = {itemID = 34363, spellID = 46123 }; --Ring of Flowing Life", "=ds="..AL["Skill Required:"].." 365
 		[10] = {itemID = 45808, spellID = 64727 }; --Runed Mana Band
 		[11] = {itemID = 45809, spellID = 64728 }; --Scarlet Signet
 		[12] = {itemID = 43250, spellID = 58147 }; --Ring of Earthern Might
@@ -1569,9 +1569,9 @@ AtlasLoot_Data["JewelcraftingWRATH"] = {
 		[1] = {itemID = 42646, spellID = 56500 }; --Titanium Earthguard Chain
 		[2] = {itemID = 42645, spellID = 56499 }; --Titanium Impact Choker
 		[3] = {itemID = 42647, spellID = 56501 }; --Titanium Spellshock Necklace
-		[4] = {itemID = 34360, spellID = 46126 }; --Amulet of Flowing Life", "=ds=#sr# 365
-		[5] = {itemID = 34358, spellID = 46127 }; --Hard Khorium Choker", "=ds=#sr# 365
-		[6] = {itemID = 34359, spellID = 46125 }; --Pendant of Sunfire", "=ds=#sr# 365
+		[4] = {itemID = 34360, spellID = 46126 }; --Amulet of Flowing Life", "=ds="..AL["Skill Required:"].." 365
+		[5] = {itemID = 34358, spellID = 46127 }; --Hard Khorium Choker", "=ds="..AL["Skill Required:"].." 365
+		[6] = {itemID = 34359, spellID = 46125 }; --Pendant of Sunfire", "=ds="..AL["Skill Required:"].." 365
 		[7] = {itemID = 45812, spellID = 64725 }; --Emerald Choker
 		[8] = {itemID = 45813, spellID = 64726 }; --Sky Sapphire Amulet
 		[9] = {itemID = 42339, spellID = 56196 }; --Blood Sun Necklace
@@ -1581,8 +1581,8 @@ AtlasLoot_Data["JewelcraftingWRATH"] = {
 	};
 	{
 		Name = AL["Miscellaneous"];
-		[1] = {itemID = 24123, spellID = 31078 }; --Circlet of Arcane Might", "=ds=#sr# 370
-		[2] = {itemID = 24122, spellID = 31077 }; --Coronet of the Verdant Flame", "=ds=#sr# 370
+		[1] = {itemID = 24123, spellID = 31078 }; --Circlet of Arcane Might", "=ds="..AL["Skill Required:"].." 370
+		[2] = {itemID = 24122, spellID = 31077 }; --Coronet of the Verdant Flame", "=ds="..AL["Skill Required:"].." 370
 		[3] = {itemID = 44943, spellID = 62242 }; --Icy Prism
 		[4] = { itemID = 42421, spellID = 56208 }, --Shadow Jade Focusing Lens
 		[5] = { itemID = 42420, spellID = 56206 }, --Shadow Crystal Focusing Lens
@@ -1599,7 +1599,7 @@ AtlasLoot_Data["JewelcraftingWRATH"] = {
 AtlasLoot_Data["LeatherworkingWRATH"] = {
 	Module = "AtlasLoot_Crafting_Wrath";
 	Name = LEATHERWORKING;
-	Type = "Crafting";
+	Type = "WrathCrafting";
 	{
 		Name = AL["Leather Armor"] .. WHITE .. " - Back";
 		[1] = {itemID = 43565, spellID = 60640 }; --Durable Nerubhide Cape
@@ -1793,13 +1793,13 @@ AtlasLoot_Data["LeatherworkingWRATH"] = {
 		[1] = {itemID = 44963, spellID = 62448 }; --Earthen Leg Armor
 		[2] = {itemID = 38373, spellID = 50965 }; --Frosthide Leg Armor
 		[3] = {itemID = 38374, spellID = 50967 }; --Icescale Leg Armor
-		[4] = {itemID = 29536, spellID = 35557 }; --Nethercleft Leg Armor", "=ds=#sr# 365
-		[5] = {itemID = 29535, spellID = 35554 }; --Nethercobra Leg Armor", "=ds=#sr# 365
+		[4] = {itemID = 29536, spellID = 35557 }; --Nethercleft Leg Armor", "=ds="..AL["Skill Required:"].." 365
+		[5] = {itemID = 29535, spellID = 35554 }; --Nethercobra Leg Armor", "=ds="..AL["Skill Required:"].." 365
 		[6] = {itemID = 38371, spellID = 50964 }; --Jormungar Leg Armor
 		[7] = {itemID = 38372, spellID = 50966 }; --Nerubian Leg Armor
 		[8] = {itemID = 29534, spellID = 35555 }; --Clefthide Leg Armor
 		[9] = {itemID = 29533, spellID = 35549 }; --Cobrahide Leg Armor
-		[10] = {itemID = 18251, spellID = 22727 }; --Core Armor Kit", "=ds=#sr# 300
+		[10] = {itemID = 18251, spellID = 22727 }; --Core Armor Kit", "=ds="..AL["Skill Required:"].." 300
 		[11] = {itemID = 38376, spellID = 50963 }; --Heavy Borean Armor Kit
 		[16] = {spellID = 57683, icon = "Trade_LeatherWorking" }; --Fur Lining - Attack Power
 		[17] = {spellID = 57701, icon = "Trade_LeatherWorking" }; --Fur Lining - Arcane Resist
@@ -1862,7 +1862,7 @@ AtlasLoot_Data["FirstAidWRATH"] = {
 AtlasLoot_Data["TailoringWRATH"] = {
 	Module = "AtlasLoot_Crafting_Wrath";
 	Name = TAILORING;
-	Type = "Crafting";
+	Type = "WrathCrafting";
 	{
 		Name = AL["Cloth Armor"] .. WHITE .. " - Back";
 		[1] = {itemID = 41610, spellID = 56017 }; --Deathchill Cloak
