@@ -1,9 +1,3 @@
-.env
-.DS_Store
-.release
-.install
-.lua/*
-.vscode
-.idea
 
 .vscode/settings.json
+README.md
