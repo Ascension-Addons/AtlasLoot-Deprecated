@@ -200,6 +200,8 @@ AtlasLoot_Data["RuinsofAQ"] = {
 		[11] = { itemID = 21715 }; --Sand Polished Hammer
 		[12] = { itemID = 21459 }; --Crossbow of Imminent Doom
 		[13] = { itemID = 21452 }; --Staff of the Ruins
+		[14] = { itemID = 1506054 }; --Sword of the Ruins
+		[15] = { itemID = 15028 }; --Time-Lost Pocketwatch
 		[16] = { itemID = 21220 }; --Head of Ossirian the Unscarred
 		[17] = { itemID = 21504 }; --Charm of the Shifting Sands
 		[18] = { itemID = 21507 }; --Amulet of the Shifting Sands
@@ -243,7 +245,7 @@ AtlasLoot_Data["RuinsofAQ"] = {
 		[30] = { itemID = 21392 }; --Sickle of Unyielding Strength
 	};
 	{
-		Name = "AQ Enchants";
+		Name = AL["AQ Enchants"];
 		[1] = { itemID = 20728 }; --Formula: Enchant Gloves - Frost Power
 		[2] = { itemID = 20731 }; --Formula: Enchant Gloves - Superior Agility
 		[3] = { itemID = 20734 }; --Formula: Enchant Cloak - Stealth
@@ -483,18 +485,15 @@ AtlasLoot_Data["TempleofAQ"] = {
 		[8] = { itemID = 21645 }; --Hive Tunneler's Boots
 		[9] = { itemID = 21605 }; --Gloves of the Hidden Temple
 		[10] = { itemID = 15029 }; --Aera's Poison Gland
-
 		[16] = { itemID = 21237 }; --Imperial Qiraji Regalia
 		[17] = { itemID = 21273 }; --Blessed Qiraji Acolyte Staff
 		[18] = { itemID = 21275 }; --Blessed Qiraji Augur Staff
 		[19] = { itemID = 21268 }; --Blessed Qiraji War Hammer
-
 		[21] = { itemID = 21232 }; --Imperial Qiraji Armaments
 		[22] = { itemID = 21242 }; --Blessed Qiraji War Axe
 		[23] = { itemID = 21272 }; --Blessed Qiraji Musket
 		[24] = { itemID = 21244 }; --Blessed Qiraji Pugio
 		[25] = { itemID = 21269 }; --Blessed Qiraji Bulwark
-
 		[27] = { itemID = 20931, lootTable = {"T2.5LEGS","Token"} }; --Hardened Qiraj Chitin
 	};
 	{
@@ -506,25 +505,21 @@ AtlasLoot_Data["TempleofAQ"] = {
 		[5] = { itemID = 21582 }; --Grasp of the Old God
 		[6] = { itemID = 21586 }; --Belt of Never-ending Agony
 		[7] = { itemID = 21581 }; --Gauntlets of Annihilation
-
 		[9] = { itemID = 22732 }; --Mark of C'Thun
 		[10] = { itemID = 21596 }; --Ring of the Godslayer
 		[11] = { itemID = 21579 }; --Vanquished Tentacle of C'Thun
 		[12] = { itemID = 21126 }; --Death's Sting
 		[13] = { itemID = 21134 }; --Dark Edge of Insanity
 		[14] = { itemID = 21839 }; --Scepter of the False Prophet
-
 		[15] = { itemID = 21221 }; --Eye of C'Thun
 		[16] = { itemID = 21710 }; --Cloak of the Fallen God
 		[17] = { itemID = 21712 }; --Amulet of the Fallen God
 		[18] = { itemID = 21709 }; --Ring of the Fallen God
-
 		[20] = { itemID = 22734 }; --Base of Atiesh
 		[21] = { itemID = 22632 }; --Atiesh, Greatstaff of the Guardian
 		[22] = { itemID = 22589 }; --Atiesh, Greatstaff of the Guardian
 		[23] = { itemID = 22631 }; --Atiesh, Greatstaff of the Guardian
 		[24] = { itemID = 22630 }; --Atiesh, Greatstaff of the Guardian
-		
 		[26] = { itemID = 20933, lootTable = {"T2.5CHEST","Token"} }; --Husk of the Old God
 	};
 	{
@@ -542,6 +537,18 @@ AtlasLoot_Data["TempleofAQ"] = {
 		[17] = { itemID = 21324 }; --Yellow Qiraji Resonating Crystal
 		[18] = { itemID = 21323 }; --Green Qiraji Resonating Crystal
 		[19] = { itemID = 21321 }; --Red Qiraji Resonating Crystal
+	};
+	{
+		Name = AL["Shoulder Enchants"];
+		[1] = { itemID = 1319786, desc = AL["Quest Requirements"], contentsPreview = {{20878},{20868},{20872},{20859,3},{20864,3}} }; --Inscription of the Stormcaller
+		[2] = { itemID = 1319785, desc = AL["Quest Requirements"], contentsPreview = {{20881},{20869},{20871},{20861,3},{20862,3}} }; --Inscription of the Stalker
+		[3] = { itemID = 1319789, desc = AL["Quest Requirements"], contentsPreview = {{20874},{20872},{20866},{20864,3},{20858,3}} }; --Inscription of the Oracle
+		[4] = { itemID = 1319790, desc = AL["Quest Requirements"], contentsPreview = {{20879},{20873},{20868},{20865,3},{20859,3}} }; --Inscription of the Genesis
+		[5] = { itemID = 1319787, desc = AL["Quest Requirements"], contentsPreview = {{20877},{20871},{20867},{20862,3},{20860,3}} }; --Inscription of the Enigma
+		[6] = { itemID = 1319788, desc = AL["Quest Requirements"], contentsPreview = {{20875},{20870},{20869},{20863,3},{20861,3}} }; --Inscription of the Doomcaller
+		[7] = { itemID = 1319784, desc = AL["Quest Requirements"], contentsPreview = {{20876},{20867},{20870},{20860,3},{20863,3}} }; --Inscription of the Deathdealer
+		[8] = { itemID = 1319782, desc = AL["Quest Requirements"], contentsPreview = {{20882},{20866},{20873},{20858,3},{20865,3}} }; --Inscription of the Conqueror
+		[9] = { itemID = 1319783, desc = AL["Quest Requirements"], contentsPreview = {{20878},{20868},{20872},{20859,3},{20864,3}} }; --Inscription of the Avenger
 	};
 	{
 		Name = AL["Trash Mobs"];
@@ -3786,6 +3793,7 @@ AtlasLoot_Data["ZulGurub"] = {
 		[16] = { icon = "INV_Banner_01", name = "=q4=ZG Sets", lootTable = {{"ZGSets", "AtlasLoot_Data", 1},"Source"} };
 		[18] = { itemID = 19943 }; --Massive Mojo
 		[19] = { itemID = 19881 }; --Channeler's Head
+		[21] = { itemID = 60101, droprate = "1%" }; --Pet Sigil
 	};
 	{
 		Name = BabbleBoss["High Priestess Arlokk"];
@@ -3930,6 +3938,7 @@ AtlasLoot_Data["Naxxramas60"] = {
 	Map = "Naxxramas60";
 	{
 		Name = BabbleBoss["Patchwerk"];
+		NpcID = 16028;
 		[1] = { itemID = 22960 }; --Cloak of Suturing
 		[2] = { itemID = 22815 }; --Severance
 		[3] = { itemID = 22820 }; --Wand of Fates
@@ -3941,6 +3950,7 @@ AtlasLoot_Data["Naxxramas60"] = {
 	};
 	{
 		Name = BabbleBoss["Grobbulus"];
+		NpcID = 15931;
 		[1] = { itemID = 22968 }; --Glacial Mantle
 		[2] = { itemID = 22967 }; --Icy Scale Spaulders
 		[3] = { itemID = 22803 }; --Midnight Haze
@@ -3952,6 +3962,7 @@ AtlasLoot_Data["Naxxramas60"] = {
 	};
 	{
 		Name = BabbleBoss["Gluth"];
+		NpcID = 15932;
 		[1] = { itemID = 22983 }; --Rime Covered Mantle
 		[2] = { itemID = 22813 }; --Claymore of Unholy Might
 		[3] = { itemID = 23075 }; --Death's Bargain
@@ -3966,17 +3977,20 @@ AtlasLoot_Data["Naxxramas60"] = {
 	};
 	{
 		Name = BabbleBoss["Thaddius"];
+		NpcID = 15928;
 		[1] = { itemID = 23070 }; --Leggings of Polarity
 		[2] = { itemID = 23000 }; --Plated Abomination Ribcage
 		[3] = { itemID = 22808 }; --The Castigator
 		[4] = { itemID = 22801 }; --Spire of Twilight
 		[5] = { itemID = 23001 }; --Eye of Diminution
+		[6] = { itemID = 15032 }; --Dislocated Spine
 		[16] = { itemID = 22353, lootTable = {"T3HEAD","Token"} }; --Desecrated Helmet
 		[18] = { itemID = 22726 }; --Splinter of Atiesh
 		[19] = { itemID = 22727 }; --Frame of Atiesh
 	};
 	{
 		Name = BabbleBoss["Anub'Rekhan"];
+		NpcID = 15956;
 		[1] = { itemID = 22938 }; --Cryptfiend Silk Cloak
 		[2] = { itemID = 22936 }; --Wristguards of Vengeance
 		[3] = { itemID = 22937 }; --Gem of Nerubis
@@ -3988,6 +4002,7 @@ AtlasLoot_Data["Naxxramas60"] = {
 	};
 	{
 		Name = BabbleBoss["Grand Widow Faerlina"];
+		NpcID = 15953;
 		[1] = { itemID = 22941 }; --Polar Shoulder Pads
 		[2] = { itemID = 22940 }; --Icebane Pauldrons
 		[3] = { itemID = 22806 }; --Widow's Remorse
@@ -3999,6 +4014,7 @@ AtlasLoot_Data["Naxxramas60"] = {
 	};
 	{
 		Name = BabbleBoss["Maexxna"];
+		NpcID = 15952;
 		[1] = { itemID = 23220 }; --Crystal Webbed Robe
 		[2] = { itemID = 22804 }; --Maexxna's Fang
 		[3] = { itemID = 22807 }; --Wraith Blade
@@ -4010,18 +4026,22 @@ AtlasLoot_Data["Naxxramas60"] = {
 	};
 	{
 		Name = BabbleBoss["Instructor Razuvious"];
+		NpcID = 16061;
 		[1] = { itemID = 23017 }; --Veil of Eclipse
 		[2] = { itemID = 23219 }; --Girdle of the Mentor
 		[3] = { itemID = 23014 }; --Iblis, Blade of the Fallen Seraph
 		[4] = { itemID = 23009 }; --Wand of the Whispering Dead
 		[5] = { itemID = 23004 }; --Idol of Longevity
 		[6] = { itemID = 23018 }; --Signet of the Fallen Defender
+		[7] = { itemID = 15030 }; --Jagged Cold Steel Knife
+		[8] = { itemID = 23328 }; --The Unholy Blade
 		[16] = { itemID = 22358, lootTable = {"T3FEET","Token"} }; --Desecrated Sabatons
 		[18] = { itemID = 22726 }; --Splinter of Atiesh
 		[19] = { itemID = 22727 }; --Frame of Atiesh
 	};
 	{
 		Name = BabbleBoss["Gothik the Harvester"];
+		NpcID = 16060;
 		[1] = { itemID = 23032 }; --Glacial Headdress
 		[2] = { itemID = 23021 }; --The Soul Harvester's Bindings
 		[3] = { itemID = 23020 }; --Polar Helmet
@@ -4033,6 +4053,7 @@ AtlasLoot_Data["Naxxramas60"] = {
 	};
 	{
 		Name = BabbleBoss["The Four Horsemen"];
+		NpcID = 16065;
 		[1] = { itemID = 23071 }; --Leggings of Apocalypse
 		[2] = { itemID = 22809 }; --Maul of the Redeemed Crusader
 		[3] = { itemID = 22691 }; --Corrupted Ashbringer
@@ -4045,6 +4066,7 @@ AtlasLoot_Data["Naxxramas60"] = {
 	};
 	{
 		Name = BabbleBoss["Noth the Plaguebringer"];
+		NpcID = 15954;
 		[1] = { itemID = 23030 }; --Cloak of the Scourge
 		[2] = { itemID = 22816 }; --Hatchet of Sundered Bone
 		[3] = { itemID = 23005 }; --Totem of Flowing Water
@@ -4058,6 +4080,7 @@ AtlasLoot_Data["Naxxramas60"] = {
 	};
 	{
 		Name = BabbleBoss["Heigan the Unclean"];
+		NpcID = 15936;
 		[1] = { itemID = 23035 }; --Preceptor's Hat
 		[2] = { itemID = 23033 }; --Icy Scale Coif
 		[3] = { itemID = 23019 }; --Icebane Helmet
@@ -4069,6 +4092,7 @@ AtlasLoot_Data["Naxxramas60"] = {
 	};
 	{
 		Name = BabbleBoss["Loatheb"];
+		NpcID = 16011;
 		[1] = { itemID = 23039 }; --The Eye of Nerub
 		[2] = { itemID = 22800 }; --Brimstone Staff
 		[3] = { itemID = 23037 }; --Ring of Spiritual Fervor
@@ -4080,6 +4104,7 @@ AtlasLoot_Data["Naxxramas60"] = {
 	};
 	{
 		Name = BabbleBoss["Sapphiron"];
+		NpcID = 15989;
 		[1] = { itemID = 23050 }; --Cloak of the Necropolis
 		[2] = { itemID = 23045 }; --Shroud of Dominion
 		[3] = { itemID = 23072 }; --Fists of the Unrelenting
@@ -4101,6 +4126,7 @@ AtlasLoot_Data["Naxxramas60"] = {
 	};
 	{
 		Name = BabbleBoss["Kel'Thuzad"];
+		NpcID = 15990;
 		[1] = { itemID = 22802 }; --Kingsfall
 		[2] = { itemID = 23054 }; --Gressil, Dawn of Ruin
 		[3] = { itemID = 23577 }; --The Hungering Cold
@@ -4112,15 +4138,18 @@ AtlasLoot_Data["Naxxramas60"] = {
 		[9] = { itemID = 22819 }; --Shield of Condemnation
 		[10] = { itemID = 23057 }; --Gem of Trapped Innocents
 		[11] = { itemID = 23053 }; --Stormrage's Talisman of Seething
-		[13] = { itemID = 22520 }; --The Phylactery of Kel'Thuzad
-		[14] = { itemID = 23207 }; --Mark of the Champion
-		[15] = { itemID = 23206 }; --Mark of the Champion
-		[16] = { itemID = 1510496, lootTable = {"T3FINGER","Token"} }; --Desecrated Ring
-		[18] = { itemID = 22733 }; --Staff Head of Atiesh
-		[19] = { itemID = 22632 }; --Atiesh, Greatstaff of the Guardian
-		[20] = { itemID = 22589 }; --Atiesh, Greatstaff of the Guardian
-		[21] = { itemID = 22631 }; --Atiesh, Greatstaff of the Guardian
-		[22] = { itemID = 22630 }; --Atiesh, Greatstaff of the Guardian
+		[12] = { itemID = 15036 }; --Lordaeron's Lament
+		[13] = { itemID = 15033 }; --Staff of Twisted Dreams
+		[16] = { itemID = 22520 }; --The Phylactery of Kel'Thuzad
+		[17] = { itemID = 23207 }; --Mark of the Champion
+		[18] = { itemID = 23206 }; --Mark of the Champion
+		[20] = { itemID = 1510496, lootTable = {"T3FINGER","Token"} }; --Desecrated Ring
+		[22] = { itemID = 22733 }; --Staff Head of Atiesh
+		[23] = { itemID = 22632 }; --Atiesh, Greatstaff of the Guardian
+		[24] = { itemID = 22589 }; --Atiesh, Greatstaff of the Guardian
+		[25] = { itemID = 22631 }; --Atiesh, Greatstaff of the Guardian
+		[26] = { itemID = 22630 }; --Atiesh, Greatstaff of the Guardian
+		[28] = { itemID = 60185, droprate = "1%" }; --Sigil
 	};
 	{
 		Name = AL["Trash Mobs"];
@@ -4353,6 +4382,50 @@ AtlasLoot_Data["T0"] = {
 		[6] = { itemID = 194292 }; --Belt of Courage
 		[7] = { itemID = 98271  }; --Legguards of Courage
 		[8] = { itemID = 98346  }; --Treads of Courage
+	};
+	{
+		Name = AL["Necropile Raiment"];
+		[1] = { itemID = 14626 }; --Necropile Robe
+        [2] = { itemID = 14629 }; --Necropile Cuffs
+        [3] = { itemID = 14631 }; --Necropile Boots
+        [4] = { itemID = 14632 }; --Necropile Leggings
+        [5] = { itemID = 14633 }; --Necropile Mantle
+        [6] = { itemID = 99029 }; --Necropile Belt
+        [7] = { itemID = 99387 }; --Necropile Crown
+        [8] = { itemID = 99430 }; --Necropile Gloves
+	};
+	{
+		Name = AL["Cadaverous Garb"];
+		[1] = { itemID = 14011 }; --Cadaverous Crown
+		[2] = { itemID = 14012 }; --Cadaverous Shoulders
+		[3] = { itemID = 14013 }; --Cadaverous Armor
+		[4] = { itemID = 14014 }; --Cadaverous Cuffs
+		[5] = { itemID = 14015 }; --Cadaverous Gloves
+		[6] = { itemID = 14016 }; --Cadaverous Belt
+		[7] = { itemID = 14017 }; --Cadaverous Leggings
+		[8] = { itemID = 14018 }; --Cadaverous Walkers
+	};
+	{
+		Name = AL["Bloodmail Regalia"];
+		[1] = { itemID = 14611 }; --Bloodmail Hauberk
+        [2] = { itemID = 14612 }; --Bloodmail Legguards
+        [3] = { itemID = 14614 }; --Bloodmail Belt
+        [4] = { itemID = 14615 }; --Bloodmail Gauntlets
+        [5] = { itemID = 14616 }; --Bloodmail Boots
+        [6] = { itemID = 99705 }; --Bloodmail Coif
+        [7] = { itemID = 99790 }; --Bloodmail Pauldrons
+        [8] = { itemID = 99835 }; --Bloodmail Wristguards
+	};
+	{
+		Name = AL["Deathbone Guardian"];
+		[1] = { itemID = 14026 }; --Deathbone Sabatons
+        [2] = { itemID = 14027 }; --Deathbone Legguards
+        [3] = { itemID = 14028 }; --Deathbone Girdle
+        [4] = { itemID = 14029 }; --Deathbone Gauntlets
+        [5] = { itemID = 14030 }; --Deathbone Wristguards
+        [6] = { itemID = 14031 }; --Deathbone Chestplate
+        [7] = { itemID = 14032 }; --Deathbone Pauldrons
+        [8] = { itemID = 14033 }; --Deathbone Helmet
 	};
 };
 
@@ -4632,14 +4705,14 @@ AtlasLoot_Data["T2"] = {
 	};
 	{
 		Name = AL["Druid"] ..WHITE.." - Tank";
-		[1] = { itemID = 1516900, desc = "=ds=" ..BabbleBoss["Onyxia"] };--Stormrage Cover
-		[2] = { itemID = 1516902, desc = "=ds=" ..BabbleBoss["Chromaggus"] };--Stormrage Pauldrons
-		[3] = { itemID = 1516897, desc = "=ds=" ..BabbleBoss["Nefarian"] };--Stormrage Chestguard
-		[4] = { itemID = 1516904, desc = "=ds=" ..BabbleBoss["Razorgore the Untamed"] };--Stormrage Bracers
-		[5] = { itemID = 1516904, desc = BabbleBoss["Firemaw"] ..", " ..BabbleBoss["Ebonroc"] ..", " ..BabbleBoss["Flamegor"] };--Stormrage Handguards
-		[6] = { itemID = 1516899, desc = "=ds=" ..BabbleBoss["Vaelastrasz the Corrupt"] };--Stormrage Belt
-		[7] = { itemID = 1516903, desc = "=ds=" ..BabbleBoss["Ragnaros"] };--Stormrage Legguards
-		[8] = { itemID = 1516898, desc = "=ds=" ..BabbleBoss["Broodlord Lashlayer"] };--Stormrage Boots
+		[1] = { itemID = 1517000, desc = "=ds=" ..BabbleBoss["Onyxia"] };--Stormrage Cover
+		[2] = { itemID = 1517002, desc = "=ds=" ..BabbleBoss["Chromaggus"] };--Stormrage Pauldrons
+		[3] = { itemID = 1516997, desc = "=ds=" ..BabbleBoss["Nefarian"] };--Stormrage Chestguard
+		[4] = { itemID = 1517004, desc = "=ds=" ..BabbleBoss["Razorgore the Untamed"] };--Stormrage Bracers
+		[5] = { itemID = 1516999, desc = BabbleBoss["Firemaw"] ..", " ..BabbleBoss["Ebonroc"] ..", " ..BabbleBoss["Flamegor"] };--Stormrage Handguards
+		[6] = { itemID = 1517003, desc = "=ds=" ..BabbleBoss["Vaelastrasz the Corrupt"] };--Stormrage Belt
+		[7] = { itemID = 1517001, desc = "=ds=" ..BabbleBoss["Ragnaros"] };--Stormrage Legguards
+		[8] = { itemID = 1516998, desc = "=ds=" ..BabbleBoss["Broodlord Lashlayer"] };--Stormrage Boots
 	};
 	{
 		Name = AL["Druid"] ..WHITE.." - Caster";
@@ -5113,38 +5186,6 @@ AtlasLoot_Data["ClassicSets"] = {
 		Name = AL["Dal'Rend's Arms"];
 		[1] = { itemID = 12940 }; --Dal'Rend's Sacred Charge
 		[2] = { itemID = 12939 }; --Dal'Rend's Tribal Guardian
-	};
-	{
-		Name = AL["Necropile Raiment"];
-		[1] = { itemID = 14633 }; --Necropile Mantle
-		[2] = { itemID = 14626 }; --Necropile Robe
-		[3] = { itemID = 14629 }; --Necropile Cuffs
-		[4] = { itemID = 14632 }; --Necropile Leggings
-		[5] = { itemID = 14631 }; --Necropile Boots
-	};
-	{
-		Name = AL["Cadaverous Garb"];
-		[1] = { itemID = 14637 }; --Cadaverous Armor
-		[2] = { itemID = 14640 }; --Cadaverous Gloves
-		[3] = { itemID = 14636 }; --Cadaverous Belt
-		[4] = { itemID = 14638 }; --Cadaverous Leggings
-		[5] = { itemID = 14641 }; --Cadaverous Walkers
-	};
-	{
-		Name = AL["Bloodmail Regalia"];
-		[1] = { itemID = 14611 }; --Bloodmail Hauberk
-		[2] = { itemID = 14615 }; --Bloodmail Gauntlets
-		[3] = { itemID = 14614 }; --Bloodmail Belt
-		[4] = { itemID = 14612 }; --Bloodmail Legguards
-		[5] = { itemID = 14616 }; --Bloodmail Boots
-	};
-	{
-		Name = AL["Deathbone Guardian"];
-		[1] = { itemID = 14624 }; --Deathbone Chestplate
-		[2] = { itemID = 14622 }; --Deathbone Gauntlets
-		[3] = { itemID = 14620 }; --Deathbone Girdle
-		[4] = { itemID = 14623 }; --Deathbone Legguards
-		[5] = { itemID = 14621 }; --Deathbone Sabatons
 	};
 	{
 		Name = AL["Major Mojo Infusion"];
