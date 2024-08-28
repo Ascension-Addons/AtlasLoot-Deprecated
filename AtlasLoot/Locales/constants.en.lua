@@ -10,7 +10,7 @@ The AL["text"] = true shortcut can ONLY be used for English (the root translatio
 --Create the library instance
 local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
 
-local AL = AceLocale:NewLocale("AtlasLoot", "enUS", true)
+local AL = AceLocale:NewLocale("AtlasLoot", "enUS", true, true)
 
 --Register translations
 if AL then
@@ -327,6 +327,7 @@ if AL then
 	AL["Sort Wishlist"] = true
 	AL["Add Filter Set"] = true
 	AL["Auto Sort WishLists"] = true
+	AL["Allow Duplicates"] = true
 	AL["Copy Wishlist To Own"] = true
 	AL["Make Wishlist Default"] = true
 	AL["Delete Wishlist"] = true
