@@ -447,7 +447,8 @@ function AtlasLoot:PopoupItemFrame(frame, data)
 		if item == "blank" then
 			button:Hide()
 		else
-			local itemID = item.itemID or item[1]
+			local correctID = item.itemID or item[1]
+			local itemID = self:FindId(correctID, ItemindexID) or correctID
 			local itemData = {self:GetItemInfo(itemID)}
 			SetItemButtonTexture(button, itemData[10])
 			SetItemButtonQuality(button, itemData[3])
@@ -604,7 +605,7 @@ end
 
 local function CheckTooltipForDuplicate(tooltip, text)
     -- Check if we already added to this tooltip.
-    for i = 1,15 do
+    for i = 1, 30 do
         local frame = _G[tooltip:GetName() .. "TextLeft" .. i]
         local textOld
         if frame then textOld = frame:GetText() end
@@ -798,4 +799,15 @@ function AtlasLoot:SearchAuctionHouse(text)
 		Atr_Search_Button:Click()
 	end
 
+end
+
+function AtlasLoot:GetDropRate(lootTable, lootGroup)
+	if not lootGroup then return end
+	local count = 0
+	for _, item in pairs(lootTable) do
+		if type(item) == "table" and item.lootGroup and item.lootGroup == lootGroup then
+			count = count + 1
+		end
+	end
+	return string.format("%.2f%%",lootTable.LootGroups[lootGroup]/count) or nil
 end
